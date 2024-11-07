@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function Login({ role }) {
     const [userCode, setUserCode] = useState('')
     const [error, setError] = useState('')
     const navigate = useNavigate()
+    const location = useLocation()
+
+    useEffect(() => {
+        if (location.state && location.state.error) {
+            setError(location.state.error)
+        }
+    }, [location.state])
 
     const handleInput = (e) => {
-        const input = e.target.value
+        const input = e.target.value.toUpperCase()
         setUserCode(input)
     }
 
@@ -24,15 +31,29 @@ export default function Login({ role }) {
         try {
             const response = await fetch("http://127.0.0.1:5000/process-login", {
                 method: "POST",
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({data: userCode})
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({data: userCode.toUpperCase()})
             })
 
             if (response.ok) {
                 const result = await response.json();
                 console.log(result.message);
-                console.log(result.userCode);
+                console.log(result.role);
+                console.log(result.token);
                 setError('')
+
+                localStorage.setItem("role", result.role)
+                localStorage.setItem("token", result.token)
+
+                if (result.role === 'admin') {
+                    navigate('/admin-dash')
+                } else if (result.role === 'tutor') {
+                    navigate('/tutor-dash')
+                } else if (result.role === 'student') {
+                    navigate('/student-dash')
+                }
             } else {
                 const result = await response.json();
                 setError(result.message)
@@ -49,6 +70,11 @@ export default function Login({ role }) {
 
     return (
         <div className="login-cont">
+            {error && (
+                <div style={{ fontWeight: 'bold', backgroundColor: 'red', color: 'white', padding: '10px', marginBottom: '10px' }}>
+                    {error}
+                </div>
+            )}
             <h2>{role === 'student' ? 'Student Login' : 'Tutor Login'}</h2>
             <form onSubmit={handleLogin}>
                 <input 
@@ -58,6 +84,7 @@ export default function Login({ role }) {
                     className="code-input" 
                     value={userCode} 
                     onChange={handleInput}
+                    // style={{ textTransform: "uppercase" }}
                 />
                 <button>Login</button>
             </form>
@@ -66,7 +93,6 @@ export default function Login({ role }) {
             ) : (
                 <button onClick={() => changeLogin('student')}>Student? Login here</button>
             )}
-            {error && <p style={{ color: 'red' }}>{error}</p>}
         </div>
     )
 }

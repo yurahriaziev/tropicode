@@ -1,47 +1,105 @@
 from config import app
 from flask import jsonify, request
+from firebase_setup import db, auth
+from functools import wraps
+
+import jwt
+import datetime
 
 import logging
 logging.basicConfig(level=logging.INFO)
 
+SECRET_KEY = "543959eebc61e0d8b79a7bd76028e4afe24d2cbc783a195583f789a70d4f7902"
+
 def print_err(err, err_code=None):
     print(f'{err_code} | SERVER ERROR--- {err}')
 
+def require_role(required_role):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            auth_header = request.headers.get('Authorization')
+            if not auth_header:
+                return jsonify({'message': 'Authorization header missing'}), 403
+            try:
+                token = auth_header.split('Bearer ')[1]
+                payload = jwt.decode(token, SECRET_KEY, algorythms=['HS256'])
+                user_role = payload['role']
+
+                if user_role == required_role:
+                    return f(*args, **kwargs)
+                else:
+                    return jsonify({"error": "Unauthorized access"}), 403
+            except jwt.ExpiredSignatureError:
+                return jsonify({"message": "Token has expired"}), 403
+            except jwt.InvalidTokenError:
+                return jsonify({"message": "Invalid token"}), 403
+
+        return decorated_function
+    return decorator
+
 @app.route("/server-test", methods=['POST', 'GET', 'OPTIONS'])
 def server_test():
-    return jsonify({
-        'message':'Server OK'
-    })
+    return jsonify({'message': 'Server OK'})
 
-# TODO: add login process route
 @app.route("/process-login", methods=['POST'])
 def process_login():
     logging.info("Request received at /process-login")
     try:
         data = request.json
-        print(data)
         if not data or 'data' not in data:
             print_err('Missing user code from client', 400)
-            return jsonify({
-                'message':'User code not received'
-            }), 400
+            return jsonify({'message': 'User code not received'}), 400
         
         if len(data['data']) < 4:
-            print_err('User code does not meet 4 characters')
-            return jsonify({
-                'message':'User code does not meet 4 characters'
-            }), 400
+            print_err('User code does not meet 4 characters', 400)
+            return jsonify({'message': 'User code does not meet 4 characters'}), 400
         
-        print(data['data'])
+        user_code = data.get('data')
+        user_ref = db.collection('users').where('userCode', '==', user_code).get()
+
+        if not user_ref:
+            return jsonify({'message': 'User code not found'}), 404
+        
+        user_doc = user_ref[0]
+        user_data = user_doc.to_dict()
+        role = user_data.get('role')
+
+        if role not in ["admin", "tutor", "student"]:
+            return jsonify({"message": "Unauthorized role"}), 403
+
+        # Generate a JWT token for the user
+        payload = {
+            "user_id": user_doc.id,
+            "role": role,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+        }
+        token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
         return jsonify({
-            'message': 'Login processed successfully',
-            'userCode': data['data']
+            "message": f"Login successful for {role}",
+            "role": role,
+            "token": token
         }), 200
+
     except Exception as e:
-        return jsonify({
-            'message':f'Error occured {str(e)}'
-        })
+        print_err(f"Error occurred: {e}")
+        return jsonify({'message': f'Error occurred: {str(e)}'}), 500 
+    
+@app.route('/admin-dash', methods=['GET'])
+@require_role('admin')
+def admin_dash():
+    return jsonify({"message": "Welcome to the Admin dashboard!"})
+
+@app.route('/tutor-dash', methods=['GET'])
+@require_role('tutor')
+def tutor_dash():
+    return jsonify({"message": "Welcome to the tutor dashboard!"})
+
+@app.route('/student-dash', methods=['GET'])
+@require_role('student')
+def student_dash():
+    return jsonify({"message": "Welcome to the student dashboard!"})
 
 if __name__ == '__main__':
     app.run(debug=True)

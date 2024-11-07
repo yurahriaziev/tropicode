@@ -7,7 +7,15 @@ export default function TestServer() {
     useEffect(() => {
         const serverStatus = async() => {
             try {
-                const connect = await fetch('http://127.0.0.1:5000/server-test')
+                const connect = await fetch('http://127.0.0.1:5000/server-test',
+                    {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                    }
+                )
                 if (connect.ok) {
                     const response = await connect.json()
                     setMessage(response.message)
