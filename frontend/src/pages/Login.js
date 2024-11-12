@@ -84,7 +84,6 @@ export default function Login({ role }) {
                     className="code-input" 
                     value={userCode} 
                     onChange={handleInput}
-                    // style={{ textTransform: "uppercase" }}
                 />
                 <button>Login</button>
             </form>
