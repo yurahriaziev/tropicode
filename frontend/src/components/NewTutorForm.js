@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 
 export default function NewTutorForm({ handleAddTutorClick, setError }) {
-    const [first, setFirst] = useState('')
-    const [last, setLast] = useState('')
-    const [email, setEmail] = useState('')
-    const [age, setAge] = useState('')
-    const [teaches, setTeaches] = useState('')
+    const [first, setFirst] = useState('test')
+    const [last, setLast] = useState('test')
+    const [email, setEmail] = useState('test')
+    const [age, setAge] = useState('18')
+    const [teaches, setTeaches] = useState('test')
 
     const handleSubmit = async(e) => {
         e.preventDefault()
@@ -43,10 +43,10 @@ export default function NewTutorForm({ handleAddTutorClick, setError }) {
                 setError(''); // Clear any previous error messages
                 handleAddTutorClick(false); // Close the form on success
             } else {
-                setError(result.error || 'Error while adding new tutor, try again');
+                setError(result.error || 'SERVER - Error while adding new tutor, try again');
             }
         } catch (error) {
-            setError('Error while adding new tutor, try again')
+            setError('CLIENT - Error while adding new tutor, try again')
             console.log(error)
         }
     }

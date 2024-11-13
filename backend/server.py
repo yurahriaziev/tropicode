@@ -66,7 +66,7 @@ def process_login():
             return jsonify({'message': 'User code does not meet 4 characters'}), 400
         
         user_code = data.get('data')
-        user_ref = db.collection('users').where('userCode', '==', user_code).get()
+        user_ref = db.collection('users').where(field_path='userCode', op_string='==', value=user_code).get()
 
         if not user_ref:
             return jsonify({'message': 'User code not found'}), 404
@@ -84,7 +84,7 @@ def process_login():
             "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
         }
         token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
-
+        print(token)
         return jsonify({
             "message": f"Login successful for {role}",
             "role": role,
@@ -108,7 +108,7 @@ def create_tutor():
     except Exception as e:
         print("Error occurred:", str(e))
         return jsonify({
-            'error': f'Error occurred when adding new tutor: {str(e)}'
+            'error': f'SERVER - Error occurred when adding new tutor: {str(e)}'
         }), 403
 
     

@@ -25,9 +25,10 @@ export default function Login({ role }) {
     }, [error])
 
     const handleLogin = async(e) => {
+        setError('')
         e.preventDefault()
         console.log('login btn clicked', userCode)
-        // TODO: access '/api/process-login' route and send userCode to backend
+
         try {
             const response = await fetch("http://127.0.0.1:5000/process-login", {
                 method: "POST",
@@ -46,6 +47,8 @@ export default function Login({ role }) {
 
                 localStorage.setItem("role", result.role)
                 localStorage.setItem("token", result.token)
+                const tokenExp = Date.now() + 60 * 60 * 1000
+                localStorage.setItem("token_expiry", tokenExp)
 
                 if (result.role === 'admin') {
                     navigate('/admin-dash')
