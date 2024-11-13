@@ -1,6 +1,6 @@
 from config import app
 from flask import jsonify, request
-from firebase_setup import db, auth, add_tutor
+from firebase_setup import db, auth, add_tutor, remove_tutor_db
 from functools import wraps
 
 import jwt
@@ -10,6 +10,8 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 SECRET_KEY = "543959eebc61e0d8b79a7bd76028e4afe24d2cbc783a195583f789a70d4f7902"
+GREEN = "\033[92m"
+RESET = "\033[0m"
 
 def print_err(err, err_code=None):
     print(f'{err_code} | SERVER ERROR--- {err}')
@@ -104,20 +106,55 @@ def create_tutor():
 
         add_tutor(data['first'], data['last'], data['email'], data['age'], data['teaches'])
         
+        tutors = []
+        tutors_ref = db.collection('tutors')
+        docs = tutors_ref.get()
+        for doc in docs:
+            tutor_data = doc.to_dict()
+            tutor_data['id'] = doc.id
+            tutors.append(tutor_data)
+
         return jsonify({
-            'message': 'success'
-        })
+            'message': 'Tutor added successfully!',
+            'tutors': tutors
+        }), 200
     except Exception as e:
         print("Error occurred:", str(e))
         return jsonify({
             'error': f'SERVER - Error occurred when adding new tutor: {str(e)}'
         }), 403
-
+    
+@app.route('/remove-tutor', methods=['POST'])
+@require_role('admin')
+def remove_tutor():
+    try:
+        data = request.json
+        uid = data.get('uid')
+        remove_tutor_db(uid)
+        return jsonify({'message':'Tutor successfully removed!'}), 200
+    except Exception as e:
+        return jsonify({'error':f'SERVER - Error from remove-tutor route {str(e)}'}), 403
     
 @app.route('/admin-dash', methods=['GET'])
 @require_role('admin')
 def admin_dash():
-    return jsonify({"message": "Welcome to the Admin dashboard!"})
+    #TODO: access the db and fetch all tutors and send to client as a list
+    tutors = []
+    try:
+        tutors_ref = db.collection('tutors')
+        docs = tutors_ref.get()
+        for doc in docs:
+            tutor_data = doc.to_dict()
+            tutor_data['id'] = doc.id
+            tutors.append(tutor_data)
+        print(f"{GREEN}Tutors fetched successfully: {len(tutors)}{RESET}")
+    except Exception as e:
+        return jsonify({'error':f'SERVER - Error occured when fetching tutors: {str(e)}'}), 403
+
+    return jsonify({
+            'message': "Welcome to the Admin dashboard!",
+            'tutors': tutors
+        })
 
 @app.route('/tutor-dash', methods=['GET'])
 @require_role('tutor')
@@ -131,6 +168,3 @@ def student_dash():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-### test

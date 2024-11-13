@@ -7,6 +7,8 @@ import string
 YELLOW = "\033[93m"
 BLUE = "\033[94m"
 RESET = "\033[0m"
+RED = "\033[31m"
+GREEN = "\033[92m"
 
 cred = credentials.Certificate('../backend/firebase-key.json')
 firebase_admin.initialize_app(cred)
@@ -54,3 +56,21 @@ def add_student(first, last, age):
         'userCode':generate_user_code()
     })
     print(f'User {first, last} added to "users" collection with ID: {user_ref.id}')
+
+def remove_tutor_db(uid):
+    try:
+        tutor_ref = db.collection('tutors').document(uid)
+        if tutor_ref.get().exists:
+            tutor_ref.delete()
+            print(f'{GREEN}Tutor deleted from "tutors" collection')
+        else:
+            print(f'{RED} Tutor with id {uid} not found{RESET}')
+
+        user_ref = db.collection('users').document(uid)
+        if user_ref.get().exists:
+            user_ref.delete()
+            print(f'{GREEN}User deleted from "users" collection')
+        else:
+            print(f'{RED}User with id {uid} not found{RESET}')
+    except Exception as e:
+        print(f'{RED}SERVER - Error removing user {str(e)}{RESET}')

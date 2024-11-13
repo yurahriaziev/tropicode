@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-export default function NewTutorForm({ handleAddTutorClick, setError, setSuccess }) {
+export default function NewTutorForm({ handleAddTutorClick, setError, setSuccess, setTutors }) {
     const [first, setFirst] = useState('')
     const [last, setLast] = useState('')
     const [email, setEmail] = useState('')
@@ -42,6 +42,7 @@ export default function NewTutorForm({ handleAddTutorClick, setError, setSuccess
                 console.log("Tutor added successfully:", result)
                 setError('')
                 setSuccess('Tutor added successfully!')
+                setTutors(result.tutors)
                 handleAddTutorClick(false)
             } else {
                 setError(result.error || 'SERVER - Error while adding new tutor, try again')
