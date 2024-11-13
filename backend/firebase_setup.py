@@ -4,6 +4,10 @@ from firebase_admin import credentials, firestore, auth
 import random
 import string
 
+YELLOW = "\033[93m"
+BLUE = "\033[94m"
+RESET = "\033[0m"
+
 cred = credentials.Certificate('../backend/firebase-key.json')
 firebase_admin.initialize_app(cred)
 
@@ -24,7 +28,7 @@ def add_tutor(first, last, email, age, teaches, students=[]):
         'teaches':teaches,
         'students':students,
     })
-    print(f'Tutor {first, last} added to "tutors" collection with ID: {tutor_ref.id}')
+    print(f'{YELLOW}Tutor {first, last} added to "tutors" collection with ID: {tutor_ref.id}{RESET}')
 
     user_ref = db.collection('users').document(tutor_ref.id)
     user_ref.set({
@@ -32,7 +36,7 @@ def add_tutor(first, last, email, age, teaches, students=[]):
         'profileId':tutor_ref.id,
         'userCode':generate_user_code()
     })
-    print(f'User {first, last} added to "users" collection with ID: {user_ref.id}')
+    print(f'{BLUE}User {first, last} added to "users" collection with ID: {user_ref.id}{RESET}')
 
 def add_student(first, last, age):
     student_ref = db.collection("tutors").document()

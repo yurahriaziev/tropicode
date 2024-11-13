@@ -100,8 +100,10 @@ def process_login():
 def create_tutor():
     try:
         data = request.json
-        print("Received data:", data)
         print(data)
+
+        add_tutor(data['first'], data['last'], data['email'], data['age'], data['teaches'])
+        
         return jsonify({
             'message': 'success'
         })
