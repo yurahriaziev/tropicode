@@ -1,6 +1,6 @@
 from config import app
 from flask import jsonify, request
-from firebase_setup import db, auth, add_tutor, remove_tutor_db
+from firebase_setup import db, auth, add_tutor, remove_tutor_db, add_student
 from functools import wraps
 
 import jwt
@@ -83,14 +83,15 @@ def process_login():
         payload = {
             "user_id": user_doc.id,
             "role": role,
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours = 1)
         }
         token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
         print(token)
         return jsonify({
             "message": f"Login successful for {role}",
             "role": role,
-            "token": token
+            "token": token,
+            "tutorId":user_doc.id
         }), 200
 
     except Exception as e:
@@ -103,6 +104,10 @@ def create_tutor():
     try:
         data = request.json
         print(data)
+        fields = ['first', 'last', 'email', 'age', 'teaches']
+        for field in fields:
+            if field not in data or not data[field]:
+                return jsonify({'error':'Missing required fields'})
 
         add_tutor(data['first'], data['last'], data['email'], data['age'], data['teaches'])
         
@@ -138,7 +143,6 @@ def remove_tutor():
 @app.route('/admin-dash', methods=['GET'])
 @require_role('admin')
 def admin_dash():
-    #TODO: access the db and fetch all tutors and send to client as a list
     tutors = []
     try:
         tutors_ref = db.collection('tutors')
@@ -160,6 +164,14 @@ def admin_dash():
 @require_role('tutor')
 def tutor_dash():
     return jsonify({"message": "Welcome to the tutor dashboard!"})
+
+@app.route('/create-student', methods=['POST'])
+@require_role('tutor')
+def create_student():
+    data = request.json
+    if data:
+        add_student(data['first'], data['last'], data['age'], data['tutor'])        
+        return jsonify({'message':'data received', 'data':data})
 
 @app.route('/student-dash', methods=['GET'])
 @require_role('student')

@@ -53,7 +53,7 @@ export default function Login({ role }) {
                 if (result.role === 'admin') {
                     navigate('/admin-dash')
                 } else if (result.role === 'tutor') {
-                    navigate('/tutor-dash')
+                    navigate('/tutor-dash', { state: { tutorId: result.tutorId } })
                 } else if (result.role === 'student') {
                     navigate('/student-dash')
                 }

@@ -40,8 +40,8 @@ def add_tutor(first, last, email, age, teaches, students=[]):
     })
     print(f'{BLUE}User {first, last} added to "users" collection with ID: {user_ref.id}{RESET}')
 
-def add_student(first, last, age):
-    student_ref = db.collection("tutors").document()
+def add_student(first, last, age, tutor_id):
+    student_ref = db.collection("students").document()
     student_ref.set({
         'first':first,
         'last':last,
@@ -51,11 +51,16 @@ def add_student(first, last, age):
 
     user_ref = db.collection('users').document(student_ref.id)
     user_ref.set({
-        'role':'tutor',
+        'role':'student',
         'profileId':student_ref.id,
         'userCode':generate_user_code()
     })
     print(f'User {first, last} added to "users" collection with ID: {user_ref.id}')
+
+    tutor_ref = db.collection('tutors').document(tutor_id)
+    tutor_ref.update({
+        'students':firestore.ArrayUnion([student_ref.id])
+    })
 
 def remove_tutor_db(uid):
     try:

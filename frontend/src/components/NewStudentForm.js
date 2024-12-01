@@ -1,30 +1,25 @@
 import React, { useState } from "react";
 
-export default function NewTutorForm({ handleAddTutorClick, setError, setSuccess, setTutors }) {
+export default function NewStudentForm({ handleAddStudentClick, setError, setSuccess, setStudents, tutorId }) {
     const [first, setFirst] = useState('')
     const [last, setLast] = useState('')
-    const [email, setEmail] = useState('')
     const [age, setAge] = useState('')
-    const [teaches, setTeaches] = useState('')
 
     const handleSubmit = async(e) => {
         e.preventDefault()
         console.log(first)
         console.log(last)
-        console.log(email)
         console.log(age)
-        console.log(teaches)
         const toSend = {
+            tutor: tutorId,
             first: first,
             last: last,
-            email: email,
             age: age,
-            teaches: teaches
         }
         try {
             const token = localStorage.getItem("token")
             console.log("Authorization Token:", token);
-            const response = await fetch('http://127.0.0.1:5000/create-tutor', 
+            const response = await fetch('http://127.0.0.1:5000/create-student', 
                 {
                     method: "POST",
                     headers: {
@@ -39,25 +34,25 @@ export default function NewTutorForm({ handleAddTutorClick, setError, setSuccess
             const result = await response.json();
 
             if (response.ok) {
-                console.log("Tutor added successfully:", result)
+                console.log("Student added successfully:", result)
                 setError('')
-                setSuccess('Tutor added successfully!')
-                setTutors(result.tutors)
-                handleAddTutorClick(false)
+                setSuccess('Student added successfully!')
+                setStudents(result.students)
+                handleAddStudentClick(false)
             } else {
-                setError(result.error || 'SERVER - Error while adding new tutor, try again')
+                setError(result.error || 'SERVER - Error while adding new student, try again')
             }
         } catch (error) {
-            setError('CLIENT - Error while adding new tutor, try again')
+            setError('CLIENT - Error while adding new student, try again')
             console.log(error)
         }
     }
 
     return (
         <div className="tutor-form-cont">
-            <button onClick={() => handleAddTutorClick(false)}>Close</button>
+            <button onClick={() => handleAddStudentClick(false)}>Close</button>
             <div className="tutor-form-title">
-                Add new tutor.
+                Add new student.
             </div>
             <div className="tutor-form">
                 <form onSubmit={handleSubmit}>
@@ -83,21 +78,7 @@ export default function NewTutorForm({ handleAddTutorClick, setError, setSuccess
                         onChange={(e) => setAge(e.target.value)}
                         min={0}
                     />
-                    <input
-                        type="text" 
-                        placeholder="Email" 
-                        value={email}
-                        required={true}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-                    <input
-                        type="text" 
-                        placeholder="Subject taught" 
-                        value={teaches}
-                        required={true}
-                        onChange={(e) => setTeaches(e.target.value)}
-                    />
-                    <button type="submit">Add Tutor</button>
+                    <button type="submit">Add Student</button>
                 </form>
             </div>
         </div>
