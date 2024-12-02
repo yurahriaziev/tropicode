@@ -62,14 +62,14 @@ def add_student(first, last, age, tutor_id):
         'students':firestore.ArrayUnion([student_ref.id])
     })
 
-def remove_tutor_db(uid):
+def remove_user(collection, uid):
     try:
-        tutor_ref = db.collection('tutors').document(uid)
-        if tutor_ref.get().exists:
-            tutor_ref.delete()
-            print(f'{GREEN}Tutor deleted from "tutors" collection')
+        role_ref = db.collection(collection).document(uid)
+        if role_ref.get().exists:
+            role_ref.delete()
+            # print(f'{GREEN}Tutor deleted from "tutors" collection')
         else:
-            print(f'{RED} Tutor with id {uid} not found{RESET}')
+            print(f'{RED} User with id {uid} in {collection} not found{RESET}')
 
         user_ref = db.collection('users').document(uid)
         if user_ref.get().exists:

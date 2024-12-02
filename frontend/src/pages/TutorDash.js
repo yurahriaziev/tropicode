@@ -65,6 +65,34 @@ function TutorDash() {
         fetchStudents()
     }, [tutorId])
 
+    const handleRemoveStudent = async(uid) => {
+        try {
+            const token = localStorage.getItem("token")
+            const response = await fetch('http://127.0.0.1:5000/remove-student', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({collection: 'students', uid: uid})
+            })
+            
+            if (response.ok) {
+                const result = await response.json()
+                setSuccess(result.message)
+                setStudents((prevStudents) => prevStudents.filter(student => student.id !== uid))
+            } else {
+                const result = await response.json();
+                setError(result.error || "Error removing student");
+                console.error(result.error);
+            }
+        } catch(error) {
+            console.log(error.message)
+            setError(error.message)
+        }
+    }
+
     return (
         <div className="tutor-cont">
             {error && (
@@ -91,7 +119,7 @@ function TutorDash() {
             <div className="students-cont">
                 <h2>Your students</h2>
                 {/* Here will be a table with students: Name | Action */}
-                <TutorStudentsList students={students} />
+                <TutorStudentsList students={students} handleRemoveStudent={handleRemoveStudent}/>
             </div>
         </div>
     )

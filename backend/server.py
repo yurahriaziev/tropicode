@@ -1,6 +1,6 @@
 from config import app
 from flask import jsonify, request
-from firebase_setup import db, auth, add_tutor, remove_tutor_db, add_student
+from firebase_setup import db, auth, add_tutor, remove_user, add_student
 from functools import wraps
 
 import jwt
@@ -135,8 +135,21 @@ def remove_tutor():
     try:
         data = request.json
         uid = data.get('uid')
-        remove_tutor_db(uid)
+        collection = data.get('collection')
+        remove_user(collection, uid)
         return jsonify({'message':'Tutor successfully removed!'}), 200
+    except Exception as e:
+        return jsonify({'error':f'SERVER - Error from remove-tutor route {str(e)}'}), 403
+    
+@app.route('/remove-student', methods=['POST'])
+@require_role('tutor')
+def remove_student():
+    try:
+        data = request.json
+        uid = data.get('uid')
+        collection = data.get('collection')
+        remove_user(collection, uid)
+        return jsonify({'message':'Student successfully removed!'}), 200
     except Exception as e:
         return jsonify({'error':f'SERVER - Error from remove-tutor route {str(e)}'}), 403
     
@@ -181,7 +194,9 @@ def tutor_dash():
             student_doc = student_ref.get()
 
             if student_doc.exists:
-                students.append(student_doc.to_dict())
+                student_data = student_doc.to_dict()
+                student_data['id'] = student_doc.id
+                students.append(student_data)
     except Exception as e:
         return jsonify({'error':f'SERVER - Error occured when fetching tutors: {str(e)}'}), 403
         

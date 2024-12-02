@@ -42,7 +42,7 @@ function AdminDash() {
                     'Accept': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({uid: uid})
+                body: JSON.stringify({collection: 'tutors', uid: uid})
             })
             
             if (response.ok) {
