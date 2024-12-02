@@ -160,18 +160,55 @@ def admin_dash():
             'tutors': tutors
         })
 
-@app.route('/tutor-dash', methods=['GET'])
+@app.route('/tutor-dash', methods=['GET', 'POST'])
 @require_role('tutor')
 def tutor_dash():
-    return jsonify({"message": "Welcome to the tutor dashboard!"})
+    students = []
+    data = request.json
+    try:
+        tutor_ref = db.collection('tutors').document(data['tutorId'])
+        tutor_doc = tutor_ref.get()
+        if not tutor_doc:
+            return jsonify({'error':f'User with ID: {data['tutorId']} does not exist'})
+        
+        tutor_data = tutor_doc.to_dict()
+        student_ids = tutor_data.get('students', [])
+        if not student_ids:
+            return jsonify({'message':'No students yet'})
+        
+        for id in student_ids:
+            student_ref = db.collection('students').document(id)
+            student_doc = student_ref.get()
+
+            if student_doc.exists:
+                students.append(student_doc.to_dict())
+    except Exception as e:
+        return jsonify({'error':f'SERVER - Error occured when fetching tutors: {str(e)}'}), 403
+        
+    return jsonify({"message": "Welcome to the tutor dashboard!", "students":students})
 
 @app.route('/create-student', methods=['POST'])
 @require_role('tutor')
 def create_student():
-    data = request.json
-    if data:
-        add_student(data['first'], data['last'], data['age'], data['tutor'])        
-        return jsonify({'message':'data received', 'data':data})
+    try:
+        data = request.json
+        if data:
+            add_student(data['first'], data['last'], data['age'], data['tutor'])
+            tutor_doc = db.collection('tutors').document(data['tutor']).get()
+            tutor_data = tutor_doc.to_dict()
+            student_ids = tutor_data.get('students', [])
+            students = []
+
+            for student_id in student_ids:
+                student_doc = db.collection('students').document(student_id).get()
+                if student_doc.exists:
+                    student_data = student_doc.to_dict()
+                    student_data['id'] = student_id
+                    students.append(student_data)
+
+            return jsonify({'message':'Student added successfully', 'students':students})
+    except Exception as e:
+        return jsonify({'error': f'SERVER - Error occurred when adding a student: {str(e)}'}), 500
 
 @app.route('/student-dash', methods=['GET'])
 @require_role('student')

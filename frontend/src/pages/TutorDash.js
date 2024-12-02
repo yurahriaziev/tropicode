@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import withAuth from "../withAuth";
 import NewStudentForm from "../components/NewStudentForm";
 import { useLocation, useNavigate } from "react-router-dom";
+import TutorStudentsList from "../components/TutorStudentsList";
 
 function TutorDash() {
     const location = useLocation()
@@ -33,6 +34,37 @@ function TutorDash() {
         }
     }, [success])
 
+    useEffect(() => {
+        const fetchStudents = async () => {
+            const token = localStorage.getItem("token")
+            try {
+                const response = await fetch('http://127.0.0.1:5000/tutor-dash', {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ tutorId })
+                });
+    
+                if (response.ok) {
+                    const result = await response.json()
+                    setStudents(result.students)
+                    console.log(result.students)
+                } else {
+                    const result = await response.json()
+                    setError(result.message || "Error fetching students")
+                }
+            } catch (error) {
+                console.log(error.message)
+                setError(error.message)
+            }
+        };
+    
+        fetchStudents()
+    }, [tutorId])
+
     return (
         <div className="tutor-cont">
             {error && (
@@ -59,6 +91,7 @@ function TutorDash() {
             <div className="students-cont">
                 <h2>Your students</h2>
                 {/* Here will be a table with students: Name | Action */}
+                <TutorStudentsList students={students} />
             </div>
         </div>
     )
