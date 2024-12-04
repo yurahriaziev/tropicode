@@ -1,17 +1,167 @@
 from config import app
-from flask import jsonify, request
+from flask import jsonify, request, session, redirect
 from firebase_setup import db, auth, add_tutor, remove_user, add_student
 from functools import wraps
 
+from meets import GoogleMeetSystem
+from google.oauth2.credentials import Credentials
+from google.auth.transport.requests import Request
+
 import jwt
+import os
 import datetime
+from datetime import timezone
+import json
+from cryptography.fernet import Fernet
+
+encryption_key = Fernet.generate_key()
+cipher = Fernet(encryption_key)
 
 import logging
 logging.basicConfig(level=logging.INFO)
 
 SECRET_KEY = "543959eebc61e0d8b79a7bd76028e4afe24d2cbc783a195583f789a70d4f7902"
 GREEN = "\033[92m"
+RED = "\033[31m"
 RESET = "\033[0m"
+
+google_meet = GoogleMeetSystem(
+    client_secrets_file='../backend/client_secret.json',
+    redirect_uri='http://127.0.0.1:5000/oauth2callback',
+    scopes=[
+            "https://www.googleapis.com/auth/calendar",
+            "https://www.googleapis.com/auth/calendar.events",
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "openid"
+        ]
+)
+
+'''
+Saving user creds to Encrypted JSON
+Clearing it after
+'''
+
+CREDENTIALS_FOLDER = os.path.join(os.path.dirname(__file__), 'user_creds')
+
+def save_creds_to_json(user_id, credentials):
+    credentials_data = {
+        'token':credentials.token,
+        'refresh_token':credentials.refresh_token,
+        'token_uri':credentials.token_uri,
+        'client_id':credentials.client_id,
+        'client_secret':credentials.client_secret,
+        'scopes':credentials.scopes,
+        'expiry':str(credentials.expiry) if hasattr(credentials, 'expiry') else None,
+    }
+
+    encrypted_data = cipher.encrypt(json.dumps(credentials_data).encode())
+    file_name = os.path.join(CREDENTIALS_FOLDER, f'credentials_{user_id}.json')
+    with open(file_name, 'wb') as file:
+        file.write(encrypted_data)
+
+    logging.info(f'{GREEN}Credentials saved for user {user_id}{RESET}')
+
+def load_user_creds(user_email):
+    try:
+        file_name = os.path.join(CREDENTIALS_FOLDER, f'credentials_{user_email}.json')
+        print(f"Loading credentials from: {file_name}")
+
+        with open(file_name, 'rb') as file:
+            encrypted_data = file.read()
+            print("Encrypted data loaded:", encrypted_data)
+
+            decrypt = cipher.decrypt(encrypted_data)
+            print("Decrypted data:", decrypt.decode())
+
+            credentials_data = json.loads(decrypt.decode())
+            credentials = Credentials(
+                token=credentials_data["token"],
+                refresh_token=credentials_data["refresh_token"],
+                token_uri=credentials_data["token_uri"],
+                client_id=credentials_data["client_id"],
+                client_secret=credentials_data["client_secret"],
+                scopes=credentials_data["scopes"],
+            )
+            return credentials
+    except FileNotFoundError:
+        raise Exception(f"Credentials file not found for user: {user_email}")
+    except Exception as e:
+        raise Exception(f"Error loading credentials for {user_email}: {str(e)}")
+
+def refresh_token(user_email, credentials):
+    if credentials.expiry and credentials.expiry < datetime.now(timezone.utc):
+        credentials.refresh(Request())
+        logging.info(f"{GREEN}Access token refreshed for user: {user_email}{RESET}")
+        save_creds_to_json(user_email, credentials)
+    return credentials
+
+'''
+Google Meets system
+'''
+@app.route('/authorize')
+def authorize():
+    auth_url = google_meet.authorize()
+    return redirect(auth_url)
+
+@app.route('/oauth2callback')
+def oauth2callback():
+    state = session.get('state')
+    credentials = google_meet.handle_oauth_callback(request.url, state)
+    print('Scopes', credentials.scopes)
+
+    user_info = google_meet.get_user_info(credentials)
+    u_email = user_info.get('email')
+    u_name = user_info.get('name')
+    save_creds_to_json(u_email, credentials)
+
+    logging.info("Credentials successfully stored in session")
+    return jsonify({'message':'Authorization successful', 'credentials':session['credentials'], 'user_email':u_email}) #'credentials' key for debugging, remove it later
+
+@app.route('/create-meeting', methods=['POST', 'GET'])
+def create_meeting():
+    '''
+    Create the Google Meeting
+    '''
+    try:
+        data = request.get_json()
+        user_email = data.get('user_email')
+
+        if not user_email:
+            return jsonify({"error": "User email is required"}), 400
+        
+        title = data.get('title', 'Untitled Meeting')
+        description = data.get('description', 'No description provided.')
+        start_time = data.get('start_time')
+        end_time = data.get('end_time')
+        time_zone = data.get('time_zone', 'UTC')
+
+        if not start_time or not end_time:
+            return jsonify({"error": "Start time and end time are required"}), 400
+        
+        credentials = load_user_creds(user_email)
+        credentials = refresh_token(user_email, credentials)
+
+        meeting = google_meet.create_class(
+            credentials=credentials,
+            title=title,
+            description=description,
+            start_time=start_time,
+            end_time=end_time,
+            time_zone=time_zone
+        )
+
+        return jsonify({
+            'message':'Meeting created successfully',
+            'meeting_link':meeting['meeting_link'],
+            'event_details':meeting['event_details']
+        })
+    except FileNotFoundError:
+        logging.error(f"{RED}Credentials file not found for the user{RESET}")
+        return jsonify({"error": "User not authenticated"}), 401
+    except Exception as e:
+        logging.error(f"{RED}Failed to create meeting: {str(e)}{RESET}")
+        return jsonify({'error': f'Failed to create meeting: {str(e)}'}), 500
 
 def print_err(err, err_code=None):
     print(f'{err_code} | SERVER ERROR--- {err}')
