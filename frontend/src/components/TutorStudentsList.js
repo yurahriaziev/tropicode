@@ -13,8 +13,7 @@ export default function TutorStudentsList({ students, handleRemoveStudent }) {
                     </tr>
                 </thead>
                 <tbody>
-                    {students ? (
-                       students.length > 0 ? (
+                    {students && students.length > 0 ? (
                             students.map((student, index) => (
                                 <tr key={index}>
                                     <td>{student.first}</td>
@@ -29,10 +28,7 @@ export default function TutorStudentsList({ students, handleRemoveStudent }) {
                                 No Students Yet
                             </td>
                         </tr>
-                       )
-                    ) : (
-                        <h2>Loading...</h2>
-                    )}
+                       )}
                 </tbody>
             </table>
         </>

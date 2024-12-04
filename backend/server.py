@@ -1,6 +1,6 @@
 from config import app
 from flask import jsonify, request, session, redirect
-from firebase_setup import db, auth, add_tutor, remove_user, add_student
+from firebase_setup import firestore, db, auth, add_tutor, remove_user, add_student
 from functools import wraps
 
 from meets import GoogleMeetSystem
@@ -299,6 +299,14 @@ def remove_student():
         uid = data.get('uid')
         collection = data.get('collection')
         remove_user(collection, uid)
+
+        tutor_id = data.get('tutorId')
+        tutor_ref = db.collection('tutors').document(tutor_id)
+
+        tutor_ref.update({
+            'students':firestore.ArrayRemove([uid])
+        })
+
         return jsonify({'message':'Student successfully removed!'}), 200
     except Exception as e:
         return jsonify({'error':f'SERVER - Error from remove-tutor route {str(e)}'}), 403
@@ -350,7 +358,7 @@ def tutor_dash():
     except Exception as e:
         return jsonify({'error':f'SERVER - Error occured when fetching tutors: {str(e)}'}), 403
         
-    return jsonify({"message": "Welcome to the tutor dashboard!", "students":students})
+    return jsonify({"message": "Welcome to the tutor dashboard!", "students":students, 'tutorData':tutor_data})
 
 @app.route('/create-student', methods=['POST'])
 @require_role('tutor')
