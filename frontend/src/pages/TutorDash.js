@@ -14,6 +14,7 @@ function TutorDash() {
     const [tutorData, setTutorData] = useState({})
     const { googleConn } = useParams()
     const isGoogleConnected = googleConn === "true"
+    const [meetLink, setMeetLink] = useState('')
 
     const handleAddStudentClick = (open) => {
         setAddStudentForm(open)
@@ -112,6 +113,32 @@ function TutorDash() {
         }
     }
 
+    const createNewMeeting = async() => {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/create-meeting', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ tutorId })
+            })
+
+            if (response.ok) {
+                const result = await response.json()
+                setMeetLink(result.meetLink)
+                setSuccess('Class created successfully!')
+            } else {
+                const error = await response.json()
+                console.log(error)  // LOG
+                setError(error.error)
+            }
+        } catch (error) {
+            console.error('Error:', error)  // LOG
+            setError('An error occurred while creating the Google Meet link.')
+        }
+    }
+
     return (
         <div className="tutor-cont">
             {error && (
@@ -131,7 +158,7 @@ function TutorDash() {
             </div>
             <div className="actions-cont">
                 <button onClick={() => handleAddStudentClick(true)}>Add student</button>
-                <button>Create a class</button>
+                <button onClick={createNewMeeting}>Create a class</button>
                 {!isGoogleConnected && (<button onClick={() => connectGoogleAccount(tutorId)}>Connect Google Account</button>)}
             </div>
             {addStudentForm && (
@@ -148,6 +175,9 @@ function TutorDash() {
             </div>
             <div className="classes-cont">
                 <h2>Upcoming classes</h2>
+                {meetLink && (
+                    <a href={meetLink} target="_blank" rel="noopener noreferrer">{meetLink}</a>
+                )}
             </div>
         </div>
     )

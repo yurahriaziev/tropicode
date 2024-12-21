@@ -39,7 +39,7 @@ google = oauth.register(
     client_secret=CLIENT_SECRET,
     api_base_url='https://www.googleapis.com/oauth2/v1/',
     client_kwargs={
-        'scope': 'openid email profile https://www.googleapis.com/auth/calendar'
+        'scope': 'openid email profile https://www.googleapis.com/auth/calendar.events'
     },
     server_metadata_url= 'https://accounts.google.com/.well-known/openid-configuration'
 )
@@ -81,13 +81,66 @@ def google_callback():
         email = user_info.get('email')
         google_id = user_info.get('id')
         tutor_ref = db.collection('tutors').document(tutor_id)
-        tutor_ref.update({'google_email':email, 'google_id':google_id})
+        tutor_ref.update({
+            'google_email':email, 
+            'google_id':google_id,
+            'google_access_token':token['access_token']
+        })
 
         tutor_dash_url = f"http://localhost:3000/tutor-dash/{tutor_id}/true"
         return redirect(tutor_dash_url)
     except Exception as e:
         tutor_dash_url = f"http://localhost:3000/tutor-dash/{tutor_id}/false"
         return redirect(tutor_dash_url)
+    
+@app.route('/create-meeting', methods=['POST'])
+def create_meeting():
+    try:
+        data = request.json
+        tutor_id = data.get('tutorId')
+        tutor_ref = db.collection('tutors').document(tutor_id)
+        tutor_data = tutor_ref.get().to_dict()
+        access_token = tutor_data.get('google_access_token')
+        if not access_token:
+            return jsonify({'error': 'Google account is not connected.'}), 403
+        
+        headers = {
+            'Authorization':f'Bearer {access_token}',
+            'Content-Type':'application/json'
+        }
+        event = {
+            'summary':'Google Meet Meeting',
+            'start': {
+                'dateTime': '2024-12-21T10:00:00-07:00',  # Replace with dynamic time
+                'timeZone': 'America/Los_Angeles',
+            },
+            'end': {
+                'dateTime': '2024-12-21T11:00:00-07:00',  # Replace with dynamic time
+                'timeZone': 'America/Los_Angeles',
+            },
+            'conferenceData': {
+                'createRequest': {
+                    'conferenceSolutionKey': {
+                        'type': 'hangoutsMeet'
+                    },
+                    'requestId': str(uuid.uuid4())
+                }
+            }
+        }
+
+        response = requests.post(
+            'https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1',
+            headers=headers,
+            json=event
+        )
+        if response.status_code == 200:
+            event_data = response.json()
+            meet_link = event_data.get('hangoutLink')
+            return jsonify({'message': 'Meeting created successfully', 'meetLink': meet_link})
+        else:
+            return jsonify({'error': 'Failed to create meeting', 'details': response.json()}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 '''
 Google meets create class logic END
 '''
