@@ -3,6 +3,7 @@ import withAuth from "../withAuth";
 import NewStudentForm from "../components/NewStudentForm";
 import { useNavigate, useParams } from "react-router-dom";
 import TutorStudentsList from "../components/TutorStudentsList";
+import NewClassForm from "../components/NewClassForm";
 
 function TutorDash() {
     const { tutorId } = useParams()
@@ -15,9 +16,14 @@ function TutorDash() {
     const { googleConn } = useParams()
     const isGoogleConnected = googleConn === "true"
     const [meetLink, setMeetLink] = useState('')
+    const [newClassForm, setNewClassForm] = useState(false)
 
     const handleAddStudentClick = (open) => {
         setAddStudentForm(open)
+        if (open) setSuccess('')
+    }
+    const handleNewClassClick = (open) => {
+        setNewClassForm(open)
         if (open) setSuccess('')
     }
 
@@ -113,7 +119,7 @@ function TutorDash() {
         }
     }
 
-    const createNewMeeting = async() => {
+    const createNewMeeting = async( summary, startTime, endTime ) => {
         try {
             const response = await fetch('http://127.0.0.1:5000/create-meeting', {
                 method: 'POST',
@@ -121,12 +127,13 @@ function TutorDash() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
-                body: JSON.stringify({ tutorId })
+                body: JSON.stringify({ tutorId, summary, startTime, endTime })
             })
 
             if (response.ok) {
                 const result = await response.json()
                 setMeetLink(result.meetLink)
+                handleNewClassClick(false)
                 setSuccess('Class created successfully!')
             } else {
                 const error = await response.json()
@@ -158,11 +165,16 @@ function TutorDash() {
             </div>
             <div className="actions-cont">
                 <button onClick={() => handleAddStudentClick(true)}>Add student</button>
-                <button onClick={createNewMeeting}>Create a class</button>
+                <button onClick={() => handleNewClassClick(true)}>Create a class</button>
                 {!isGoogleConnected && (<button onClick={() => connectGoogleAccount(tutorId)}>Connect Google Account</button>)}
             </div>
             {addStudentForm && (
-                <NewStudentForm handleAddStudentClick={handleAddStudentClick} setError={setError} setSuccess={setSuccess} setStudents={setStudents} tutorId={tutorId} />
+                <NewStudentForm handleAddStudentClick={handleAddStudentClick} setError={setError}
+                setSuccess={setSuccess} setStudents={setStudents} tutorId={tutorId} />
+            )}
+            {newClassForm && (
+                <NewClassForm handleNewClassClick={handleNewClassClick} setError={setError}
+                setSuccess={setSuccess} setMeetLink={setMeetLink} createNewMeeting={createNewMeeting} />
             )}
             <div className="tutor-data-cont">
                 {tutorData && (
@@ -171,7 +183,7 @@ function TutorDash() {
             </div>
             <div className="students-cont">
                 <h2>Your students</h2>
-                <TutorStudentsList students={students} handleRemoveStudent={handleRemoveStudent}/>
+                <TutorStudentsList students={students} handleRemoveStudent={handleRemoveStudent} />
             </div>
             <div className="classes-cont">
                 <h2>Upcoming classes</h2>

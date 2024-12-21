@@ -44,6 +44,27 @@ google = oauth.register(
     server_metadata_url= 'https://accounts.google.com/.well-known/openid-configuration'
 )
 
+def refresh_access_token(refresh_token):
+    url = 'https://oauth2.googleapis.com/token'
+    payload = {
+        'client_id': CLIENT_ID,
+        'client_secret': CLIENT_SECRET,
+        'refresh_token': refresh_token,
+        'grant_type': 'refresh_token',
+    }
+
+    response = requests.post(url, data=payload)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception("Failed to refresh access token: " + response.text)
+    
+def is_token_expired(token_expiry):
+    if not token_expiry:
+        return True
+    now = datetime.datetime.utcnow().replace(tzinfo=timezone.utc)
+    return token_expiry < now
+
 @app.route('/google/login', methods=['GET'])
 def google_login():
     tutor_id = request.args.get('tutorId')
@@ -57,12 +78,12 @@ def google_login():
     
     state = json.dumps({'tutorId':tutor_id})
     redirect_uri = url_for('google_callback', _external=True)
-    print(f'{RED}{redirect_uri}{RESET}')
     return google.authorize_redirect(redirect_uri, state=state)
 
 @app.route('/oauth2callback')
 def google_callback():
     try:
+        print('GOT HERE')
         token = google.authorize_access_token()
         user_info = google.get('userinfo').json()
 
@@ -77,15 +98,24 @@ def google_callback():
                 return jsonify({'error': 'Tutor ID is missing from state'}), 400
         except json.JSONDecodeError:
             return jsonify({'error': 'Failed to decode state parameter'}), 400
-
+        print('GOT HERE')
         email = user_info.get('email')
         google_id = user_info.get('id')
         tutor_ref = db.collection('tutors').document(tutor_id)
-        tutor_ref.update({
-            'google_email':email, 
-            'google_id':google_id,
-            'google_access_token':token['access_token']
-        })
+        update_data = {
+            'google_email': email,
+            'google_id': google_id,
+            'google_access_token': token['access_token'],
+        }
+
+        if 'refresh_token' in token:
+            update_data['google_refresh_token'] = token['refresh_token']
+
+        if 'expires_in' in token:
+            update_data['token_expiry'] = datetime.datetime.utcnow() + datetime.timedelta(seconds=token['expires_in'])
+
+        tutor_ref.update(update_data)
+        print(google_id)
 
         tutor_dash_url = f"http://localhost:3000/tutor-dash/{tutor_id}/true"
         return redirect(tutor_dash_url)
@@ -101,22 +131,38 @@ def create_meeting():
         tutor_ref = db.collection('tutors').document(tutor_id)
         tutor_data = tutor_ref.get().to_dict()
         access_token = tutor_data.get('google_access_token')
-        if not access_token:
-            return jsonify({'error': 'Google account is not connected.'}), 403
+        refresh_token = tutor_data.get('google_refresh_token')
+        token_expiry = tutor_data.get('token_expiry')
+
+        if not access_token or is_token_expired(token_expiry):
+            if refresh_token:
+                refreshed_token_data = refresh_access_token(refresh_token)
+                access_token = refreshed_token_data['access_token']
+                new_expiry = datetime.datetime.utcnow() + datetime.timedelta(seconds=refreshed_token_data['expires_in'])
+                tutor_ref.update({
+                    'google_access_token': access_token,
+                    'token_expiry': new_expiry
+                })
+            else:
+                return jsonify({'error': 'Google account is not connected.'}), 403
         
         headers = {
             'Authorization':f'Bearer {access_token}',
             'Content-Type':'application/json'
         }
+
+        summary = data.get('summary')
+        startTime = data.get('startTime')
+        endTime = data.get('endTime')
         event = {
-            'summary':'Google Meet Meeting',
+            'summary':summary,
             'start': {
-                'dateTime': '2024-12-21T10:00:00-07:00',  # Replace with dynamic time
-                'timeZone': 'America/Los_Angeles',
+                'dateTime': startTime,
+                'timeZone': 'America/New_York',
             },
             'end': {
-                'dateTime': '2024-12-21T11:00:00-07:00',  # Replace with dynamic time
-                'timeZone': 'America/Los_Angeles',
+                'dateTime': endTime,
+                'timeZone': 'America/New_York',
             },
             'conferenceData': {
                 'createRequest': {
