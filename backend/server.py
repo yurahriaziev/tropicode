@@ -25,64 +25,69 @@ RESET = "\033[0m"
 '''
 Google meets create class logic START
 '''
-# CLIENTS_SECRETS = '../backend/client_secret.json'
-# with open(CLIENTS_SECRETS, "r") as file:
-#     client_secrets = json.load(file)
+CLIENTS_SECRETS = '../backend/client_secret.json'
+with open(CLIENTS_SECRETS, "r") as file:
+    client_secrets = json.load(file)
 
-# CLIENT_ID = client_secrets["web"]["client_id"]
-# CLIENT_SECRET = client_secrets["web"]["client_secret"]
+CLIENT_ID = client_secrets["web"]["client_id"]
+CLIENT_SECRET = client_secrets["web"]["client_secret"]
 
-# oauth = OAuth(app)
-# google = oauth.register(
-#     name='google',
-#     client_id=CLIENT_ID,
-#     client_secret=CLIENT_SECRET,
-#     access_token_url='https://accounts.google.com/o/oauth2/token',
-#     authorize_url='https://accounts.google.com/o/oauth2/auth',
-#     api_base_url='https://www.googleapis.com/oauth2/v1/',
-#     client_kwargs={
-#         'scope': 'openid email profile https://www.googleapis.com/auth/calendar'
-#     }
-# )
+oauth = OAuth(app)
+google = oauth.register(
+    name='google',
+    client_id=CLIENT_ID,
+    client_secret=CLIENT_SECRET,
+    api_base_url='https://www.googleapis.com/oauth2/v1/',
+    client_kwargs={
+        'scope': 'openid email profile https://www.googleapis.com/auth/calendar'
+    },
+    server_metadata_url= 'https://accounts.google.com/.well-known/openid-configuration'
+)
 
-# @app.route('/google/login', methods=['GET'])
-# def google_login():
-#     tutor_id = request.args.get('tutorId')
-#     if not tutor_id:
-#         return jsonify({'error': 'Tutor ID is required'}), 400
+@app.route('/google/login', methods=['GET'])
+def google_login():
+    tutor_id = request.args.get('tutorId')
+    if not tutor_id:
+        return jsonify({'error': 'Tutor ID is required'}), 400
     
-#     tutor_ref = db.collection('tutors').document(tutor_id)
-#     tutor_doc = tutor_ref.get()
-#     if not tutor_doc:
-#         return jsonify({'error': f'Tutor with ID {tutor_id} not found'}), 404
+    tutor_ref = db.collection('tutors').document(tutor_id)
+    tutor_doc = tutor_ref.get()
+    if not tutor_doc.exists:
+        return jsonify({'error': f'Tutor with ID {tutor_id} not found'}), 404
     
-#     state = json.dumps({'tutorId':tutor_id})
-#     redirect_uri = url_for('google_callback', _external=True)
-#     print(f'{RED}{redirect_uri}{RESET}')
-#     return google.authorize_redirect(redirect_uri)
+    state = json.dumps({'tutorId':tutor_id})
+    redirect_uri = url_for('google_callback', _external=True)
+    print(f'{RED}{redirect_uri}{RESET}')
+    return google.authorize_redirect(redirect_uri, state=state)
 
-# @app.route('/oauth2callback')
-# def google_callback():
-#     token = google.authorize_access_token()
-#     user_info = google.get('userinfo').json()
+@app.route('/oauth2callback')
+def google_callback():
+    try:
+        token = google.authorize_access_token()
+        user_info = google.get('userinfo').json()
 
-#     state = request.args.get('state')
-#     if not state:
-#         return jsonify({'error': 'State parameter is missing'}), 400
-    
-#     try:
-#         state_data = json.loads(state)
-#         tutor_id = state_data.get('tutorId')
-#         if not tutor_id:
-#             return jsonify({'error': 'Tutor ID is missing from state'}), 400
-#     except json.JSONDecodeError:
-#         return jsonify({'error': 'Failed to decode state parameter'}), 400
+        state = request.args.get('state')
+        if not state:
+            return jsonify({'error': 'State parameter is missing'}), 400
+        
+        try:
+            state_data = json.loads(state)
+            tutor_id = state_data.get('tutorId')
+            if not tutor_id:
+                return jsonify({'error': 'Tutor ID is missing from state'}), 400
+        except json.JSONDecodeError:
+            return jsonify({'error': 'Failed to decode state parameter'}), 400
 
-#     email = user_info.get('email')
-#     google_id = user_info.get('id')
-#     tutor_ref = db.collection('tutors').document(tutor_id)
-#     tutor_ref.update({'google_email':email, 'google_id':google_id})
-#     return jsonify({'message': 'Google account connected', 'email': email})
+        email = user_info.get('email')
+        google_id = user_info.get('id')
+        tutor_ref = db.collection('tutors').document(tutor_id)
+        tutor_ref.update({'google_email':email, 'google_id':google_id})
+
+        tutor_dash_url = f"http://localhost:3000/tutor-dash/{tutor_id}/true"
+        return redirect(tutor_dash_url)
+    except Exception as e:
+        tutor_dash_url = f"http://localhost:3000/tutor-dash/{tutor_id}/false"
+        return redirect(tutor_dash_url)
 '''
 Google meets create class logic END
 '''
@@ -95,38 +100,24 @@ def require_role(required_role):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             auth_header = request.headers.get('Authorization')
-            if not auth_header:
-                print("Authorization header missing")
-                return jsonify({'message': 'Authorization header missing'}), 403
-            try:
-                if 'Bearer ' not in auth_header:
-                    print("Malformed Authorization header:", auth_header)
-                    return jsonify({'message': 'Malformed Authorization header'}), 403
+            if not auth_header or not auth_header.startswith('Bearer '):
+                return jsonify({'message': 'Authorization header missing or malformed'}), 403
 
+            try:
                 token = auth_header.split('Bearer ')[1]
                 payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
                 user_role = payload.get('role')
-                print("Decoded role from token:", user_role)
 
-                if user_role == required_role:
-                    return f(*args, **kwargs)
-                else:
-                    print("User does not have required role:", user_role)
-                    return jsonify({"error": "Unauthorized access"}), 403
+                if user_role != required_role:
+                    return jsonify({'error': 'Unauthorized role'}), 403
+
+                return f(*args, **kwargs)
             except jwt.ExpiredSignatureError:
-                print("Token has expired")
-                return jsonify({"message": "Token has expired"}), 403
-            except jwt.InvalidTokenError as err:
-                print("Invalid token:", str(err))
-                return jsonify({"message": "Invalid token"}), 403
-
+                return jsonify({'message': 'Token has expired'}), 403
+            except jwt.InvalidTokenError:
+                return jsonify({'message': 'Invalid token'}), 403
         return decorated_function
     return decorator
-
-
-@app.route("/server-test", methods=['POST', 'GET', 'OPTIONS'])
-def server_test():
-    return jsonify({'message': 'Server OK'})
 
 @app.route("/process-login", methods=['POST'])
 def process_login():
@@ -151,10 +142,19 @@ def process_login():
         user_data = user_doc.to_dict()
         role = user_data.get('role')
 
-        if role not in ["admin", "tutor", "student"]:
+        if role not in {"admin", "tutor", "student"}:
             return jsonify({"message": "Unauthorized role"}), 403
         
         print(user_data)
+        if role == 'tutor':
+            tutor_ref = db.collection('tutors').document(user_doc.id)
+            tutor_data = tutor_ref.get().to_dict()
+            g_email = tutor_data.get('google_email')
+            google_connected = bool(g_email)
+        else:
+            google_connected = None
+        print(g_email)
+        print(google_connected)
 
         payload = {
             "user_id": user_doc.id,
@@ -165,15 +165,49 @@ def process_login():
         token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
         print(token)
         return jsonify({
-            "message": f"Login successful for {role}",
-            "role": role,
-            "token": token,
-            "tutorId":user_doc.id
+            "message":f"Login successful for {role}",
+            "role":role,
+            "token":token,
+            "tutorId":user_doc.id,
+            'googleConnected':google_connected
         }), 200
 
     except Exception as e:
         print_err(f"Error occurred: {e}")
         return jsonify({'message': f'Error occurred: {str(e)}'}), 500 
+    
+@app.route('/tutor-dash', methods=['GET', 'POST'])
+@require_role('tutor')
+def tutor_dash():    
+    students = []
+    data = request.json
+    try:
+        tutor_id = data.get('tutorId')
+        if not tutor_id:
+            return jsonify({'error': 'Tutor ID is missing'}), 400
+        
+        tutor_ref = db.collection('tutors').document(tutor_id)
+        tutor_doc = tutor_ref.get()
+        if not tutor_doc:
+            return jsonify({'error':f'User with ID: {data['tutorId']} does not exist'})
+        
+        tutor_data = tutor_doc.to_dict()
+        student_ids = tutor_data.get('students', [])
+        if not student_ids:
+            return jsonify({'message':'No students yet', 'tutorData':tutor_data})
+        
+        for id in student_ids:
+            student_ref = db.collection('students').document(id)
+            student_doc = student_ref.get()
+
+            if student_doc.exists:
+                student_data = student_doc.to_dict()
+                student_data['id'] = student_doc.id
+                students.append(student_data)
+    except Exception as e:
+        return jsonify({'error':f'SERVER - Error occured when fetching tutors: {str(e)}'}), 403
+        
+    return jsonify({"message": "Welcome to the tutor dashboard!", "students":students, 'tutorData':tutor_data})
 
 @app.route('/create-tutor', methods=['POST'])
 @require_role('admin')
@@ -258,38 +292,6 @@ def admin_dash():
             'tutors': tutors
         })
 
-@app.route('/tutor-dash', methods=['GET', 'POST'])
-@require_role('tutor')
-def tutor_dash():    
-    students = []
-    data = request.json
-    try:
-        tutor_id = data['tutorId']
-        print(f'{GREEN}{tutor_id}')
-        tutor_ref = db.collection('tutors').document(tutor_id)
-        tutor_doc = tutor_ref.get()
-        if not tutor_doc:
-            return jsonify({'error':f'User with ID: {data['tutorId']} does not exist'})
-        
-        tutor_data = tutor_doc.to_dict()
-        print(tutor_data)
-        student_ids = tutor_data.get('students', [])
-        if not student_ids:
-            return jsonify({'message':'No students yet', 'tutorData':tutor_data})
-        
-        for id in student_ids:
-            student_ref = db.collection('students').document(id)
-            student_doc = student_ref.get()
-
-            if student_doc.exists:
-                student_data = student_doc.to_dict()
-                student_data['id'] = student_doc.id
-                students.append(student_data)
-    except Exception as e:
-        return jsonify({'error':f'SERVER - Error occured when fetching tutors: {str(e)}'}), 403
-        
-    return jsonify({"message": "Welcome to the tutor dashboard!", "students":students, 'tutorData':tutor_data})
-
 @app.route('/create-student', methods=['POST'])
 @require_role('tutor')
 def create_student():
@@ -317,6 +319,10 @@ def create_student():
 @require_role('student')
 def student_dash():
     return jsonify({"message": "Welcome to the student dashboard!"})
+
+@app.route("/server-test", methods=['POST', 'GET', 'OPTIONS'])
+def server_test():
+    return jsonify({'message': 'Server OK'})
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -15,7 +15,7 @@ function App() {
         <Route path='/login-tutor' element={<Login role='tutor'/>} />
         <Route path='/server-test' element={<TestServer />} />
         <Route path='/admin-dash' element={<AdminDash />} />
-        <Route path='/tutor-dash' element={<TutorDash />} />
+        <Route path='/tutor-dash/:tutorId/:googleConn' element={<TutorDash />} />
         <Route path='/student-dash' element={<StudentDash />} />
         <Route path='*' element={<PageNotFound />} />
       </Routes>

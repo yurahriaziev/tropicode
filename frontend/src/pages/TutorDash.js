@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from "react";
 import withAuth from "../withAuth";
 import NewStudentForm from "../components/NewStudentForm";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import TutorStudentsList from "../components/TutorStudentsList";
 
 function TutorDash() {
-    const location = useLocation()
-    const { tutorId } = location.state || {}
+    // const location = useLocation()
+    const { tutorId } = useParams()
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
     const [addStudentForm, setAddStudentForm] = useState(false)
     const navigate = useNavigate()
     const [students, setStudents] = useState([])
     const [tutorData, setTutorData] = useState({})
-    const [googleAccountConnected, setGoogleAccountConnected] = useState(false)
-
-    console.log('Tutor ID', tutorId)
+    const { googleConn } = useParams()
+    const isGoogleConnected = googleConn === "true"
 
     const handleAddStudentClick = (open) => {
         setAddStudentForm(open)
@@ -29,6 +28,17 @@ function TutorDash() {
         localStorage.removeItem('token_expiry')
     }
 
+    // useEffect(() => {
+    //     const params = new URLSearchParams(location.search)
+    //     const googleConnected = params.get('googleConnected')
+
+    //     if (googleConnected === 'true') {
+    //         setGoogleAccountConnected(true)
+    //     } else if (googleConnected === 'false') {
+    //         setGoogleAccountConnected(false)
+    //     }
+    // }, [location])
+
     useEffect(() => {
         if (success) {
             const timer = setTimeout(() => {
@@ -40,7 +50,14 @@ function TutorDash() {
 
     useEffect(() => {
         const fetchStudents = async () => {
+            if (!tutorId) {
+                setError('Tutor ID is missing')
+                
+            }
+
             const token = localStorage.getItem("token")
+            console.log(tutorId)
+            console.log(googleConn)
             try {
                 const response = await fetch('http://127.0.0.1:5000/tutor-dash', {
                     method: "POST",
@@ -54,23 +71,21 @@ function TutorDash() {
     
                 if (response.ok) {
                     const result = await response.json()
-                    console.log('Full result\n', result)
+                    console.log('Full result\n', result)    // LOG
                     setTutorData(result.tutorData)
-                    console.log(result.tutorData)
                     setStudents(result.students)
-                    console.log(result.students)
                 } else {
                     const result = await response.json()
                     setError(result.message || "Error fetching students")
                 }
             } catch (error) {
-                console.log(error.message)
+                console.log(error.message)  // LOG
                 setError(error.message)
             }
         };
     
         fetchStudents()
-    }, [tutorId])
+    }, [tutorId, googleConn])
 
     const handleRemoveStudent = async(uid) => {
         try {
@@ -91,11 +106,11 @@ function TutorDash() {
                 setStudents((prevStudents) => prevStudents.filter(student => student.id !== uid))
             } else {
                 const result = await response.json();
-                setError(result.error || "Error removing student");
-                console.error(result.error);
+                setError(result.error || "Error removing student")
+                console.error(result.error)    // LOG
             }
         } catch(error) {
-            console.log(error.message)
+            console.log(error.message)  // LOG
             setError(error.message)
         }
     }
@@ -104,8 +119,8 @@ function TutorDash() {
         try {
             window.location.href = `http://127.0.0.1:5000/google/login?tutorId=${tutorId}`
         } catch (error) {
-            console.error('Error occurred:', error);
-            setError('An unexpected error occurred. Please try again.');
+            console.error('Error occurred:', error)  // LOG
+            setError('An unexpected error occurred. Please try again.')
         }
     }
 
@@ -124,12 +139,12 @@ function TutorDash() {
             <button onClick={handleLogout}>Logout</button>
             <div className="header-cont">
                 <h1>Welcome Tutor</h1>
-                <h2>{tutorData.email} | {tutorId} | {googleAccountConnected ? 'Google Account Connected' : 'Connect Google Account'}</h2>
+                <h2>{tutorData.email} | {tutorId} | {isGoogleConnected ? 'Google Account Connected' : 'Connect Google Account'}</h2>
             </div>
             <div className="actions-cont">
                 <button onClick={() => handleAddStudentClick(true)}>Add student</button>
                 <button>Create a class</button>
-                {!googleAccountConnected && (<button onClick={() => connectGoogleAccount(tutorId)}>Connect Google Account</button>)}
+                {!isGoogleConnected && (<button onClick={() => connectGoogleAccount(tutorId)}>Connect Google Account</button>)}
             </div>
             {addStudentForm && (
                 <NewStudentForm handleAddStudentClick={handleAddStudentClick} setError={setError} setSuccess={setSuccess} setStudents={setStudents} tutorId={tutorId} />
@@ -141,7 +156,6 @@ function TutorDash() {
             </div>
             <div className="students-cont">
                 <h2>Your students</h2>
-                {/* Here will be a table with students: Name | Action */}
                 <TutorStudentsList students={students} handleRemoveStudent={handleRemoveStudent}/>
             </div>
             <div className="classes-cont">
