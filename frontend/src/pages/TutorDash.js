@@ -5,7 +5,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import TutorStudentsList from "../components/TutorStudentsList";
 
 function TutorDash() {
-    // const location = useLocation()
     const { tutorId } = useParams()
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
@@ -27,17 +26,6 @@ function TutorDash() {
         localStorage.removeItem('role')
         localStorage.removeItem('token_expiry')
     }
-
-    // useEffect(() => {
-    //     const params = new URLSearchParams(location.search)
-    //     const googleConnected = params.get('googleConnected')
-
-    //     if (googleConnected === 'true') {
-    //         setGoogleAccountConnected(true)
-    //     } else if (googleConnected === 'false') {
-    //         setGoogleAccountConnected(false)
-    //     }
-    // }, [location])
 
     useEffect(() => {
         if (success) {
