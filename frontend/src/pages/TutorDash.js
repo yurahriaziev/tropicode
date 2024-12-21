@@ -13,6 +13,7 @@ function TutorDash() {
     const navigate = useNavigate()
     const [students, setStudents] = useState([])
     const [tutorData, setTutorData] = useState({})
+    const [googleAccountConnected, setGoogleAccountConnected] = useState(false)
 
     console.log('Tutor ID', tutorId)
 
@@ -99,6 +100,15 @@ function TutorDash() {
         }
     }
 
+    const connectGoogleAccount = async(tutorId) => {
+        try {
+            window.location.href = `http://127.0.0.1:5000/google/login?tutorId=${tutorId}`
+        } catch (error) {
+            console.error('Error occurred:', error);
+            setError('An unexpected error occurred. Please try again.');
+        }
+    }
+
     return (
         <div className="tutor-cont">
             {error && (
@@ -114,10 +124,12 @@ function TutorDash() {
             <button onClick={handleLogout}>Logout</button>
             <div className="header-cont">
                 <h1>Welcome Tutor</h1>
+                <h2>{tutorData.email} | {tutorId} | {googleAccountConnected ? 'Google Account Connected' : 'Connect Google Account'}</h2>
             </div>
             <div className="actions-cont">
                 <button onClick={() => handleAddStudentClick(true)}>Add student</button>
                 <button>Create a class</button>
+                {!googleAccountConnected && (<button onClick={() => connectGoogleAccount(tutorId)}>Connect Google Account</button>)}
             </div>
             {addStudentForm && (
                 <NewStudentForm handleAddStudentClick={handleAddStudentClick} setError={setError} setSuccess={setSuccess} setStudents={setStudents} tutorId={tutorId} />

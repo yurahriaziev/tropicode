@@ -27,7 +27,7 @@ export default function Login({ role }) {
     const handleLogin = async(e) => {
         setError('')
         e.preventDefault()
-        console.log('login btn clicked', userCode)
+        console.log('login btn clicked', userCode) // LOG
 
         try {
             const response = await fetch("http://127.0.0.1:5000/process-login", {
@@ -40,9 +40,9 @@ export default function Login({ role }) {
 
             if (response.ok) {
                 const result = await response.json();
-                console.log(result.message);
-                console.log(result.role);
-                console.log(result.token);
+                console.log(result.message);    // LOG
+                console.log(result.role);       // LOG
+                console.log(result.token);      // LOG
                 setError('')
 
                 localStorage.setItem("role", result.role)
@@ -60,10 +60,10 @@ export default function Login({ role }) {
             } else {
                 const result = await response.json();
                 setError(result.message)
-                console.error(result.message);
             }
         } catch (error) {
-            console.log(error.message)
+            console.log(error.message)  // LOG
+            setError('Login failed')
         }
     }
 
@@ -78,18 +78,25 @@ export default function Login({ role }) {
                     {error}
                 </div>
             )}
-            <h2>{role === 'student' ? 'Student Login' : 'Tutor Login'}</h2>
-            <form onSubmit={handleLogin}>
-                <input 
-                    type="text" 
-                    placeholder="Enter Code" 
-                    maxLength={4} 
-                    className="code-input" 
-                    value={userCode} 
-                    onChange={handleInput}
-                />
-                <button>Login</button>
-            </form>
+            {role === 'student' ? (
+                <div>
+                    <h2>Student Login</h2>
+                    <input 
+                        type="text" 
+                        placeholder="Enter Code" 
+                        maxLength={4} 
+                        className="code-input" 
+                        value={userCode} 
+                        onChange={handleInput}
+                    />
+                    <button onClick={handleLogin}>Login</button>
+                </div>
+            ) : (
+                <div>
+                    <h2>Tutor Login</h2>
+                    <button>Google Sign In</button>
+                </div>
+            )}
             {role === 'student' ? (
                 <button onClick={() => changeLogin('tutor')}>Tutor? Login here</button>
             ) : (

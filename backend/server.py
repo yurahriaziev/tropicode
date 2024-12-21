@@ -1,7 +1,8 @@
 from config import app
-from flask import jsonify, request, session, redirect
+from flask import jsonify, request, session, redirect, url_for
 from firebase_setup import firestore, db, auth, add_tutor, remove_user, add_student
 from functools import wraps
+import requests
 
 import jwt
 import os
@@ -9,6 +10,9 @@ import datetime
 from datetime import timezone
 import json
 import uuid
+from urllib.parse import urlencode
+
+from authlib.integrations.flask_client import OAuth
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -21,8 +25,64 @@ RESET = "\033[0m"
 '''
 Google meets create class logic START
 '''
+# CLIENTS_SECRETS = '../backend/client_secret.json'
+# with open(CLIENTS_SECRETS, "r") as file:
+#     client_secrets = json.load(file)
 
+# CLIENT_ID = client_secrets["web"]["client_id"]
+# CLIENT_SECRET = client_secrets["web"]["client_secret"]
 
+# oauth = OAuth(app)
+# google = oauth.register(
+#     name='google',
+#     client_id=CLIENT_ID,
+#     client_secret=CLIENT_SECRET,
+#     access_token_url='https://accounts.google.com/o/oauth2/token',
+#     authorize_url='https://accounts.google.com/o/oauth2/auth',
+#     api_base_url='https://www.googleapis.com/oauth2/v1/',
+#     client_kwargs={
+#         'scope': 'openid email profile https://www.googleapis.com/auth/calendar'
+#     }
+# )
+
+# @app.route('/google/login', methods=['GET'])
+# def google_login():
+#     tutor_id = request.args.get('tutorId')
+#     if not tutor_id:
+#         return jsonify({'error': 'Tutor ID is required'}), 400
+    
+#     tutor_ref = db.collection('tutors').document(tutor_id)
+#     tutor_doc = tutor_ref.get()
+#     if not tutor_doc:
+#         return jsonify({'error': f'Tutor with ID {tutor_id} not found'}), 404
+    
+#     state = json.dumps({'tutorId':tutor_id})
+#     redirect_uri = url_for('google_callback', _external=True)
+#     print(f'{RED}{redirect_uri}{RESET}')
+#     return google.authorize_redirect(redirect_uri)
+
+# @app.route('/oauth2callback')
+# def google_callback():
+#     token = google.authorize_access_token()
+#     user_info = google.get('userinfo').json()
+
+#     state = request.args.get('state')
+#     if not state:
+#         return jsonify({'error': 'State parameter is missing'}), 400
+    
+#     try:
+#         state_data = json.loads(state)
+#         tutor_id = state_data.get('tutorId')
+#         if not tutor_id:
+#             return jsonify({'error': 'Tutor ID is missing from state'}), 400
+#     except json.JSONDecodeError:
+#         return jsonify({'error': 'Failed to decode state parameter'}), 400
+
+#     email = user_info.get('email')
+#     google_id = user_info.get('id')
+#     tutor_ref = db.collection('tutors').document(tutor_id)
+#     tutor_ref.update({'google_email':email, 'google_id':google_id})
+#     return jsonify({'message': 'Google account connected', 'email': email})
 '''
 Google meets create class logic END
 '''
@@ -200,7 +260,7 @@ def admin_dash():
 
 @app.route('/tutor-dash', methods=['GET', 'POST'])
 @require_role('tutor')
-def tutor_dash():
+def tutor_dash():    
     students = []
     data = request.json
     try:
