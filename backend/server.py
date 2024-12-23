@@ -285,7 +285,7 @@ def process_login():
             "message":f"Login successful for {role}",
             "role":role,
             "token":token,
-            "tutorId":user_doc.id,
+            "userId":user_doc.id,
             'googleConnected':google_connected
         }), 200
 
@@ -446,10 +446,21 @@ def create_student():
     except Exception as e:
         return jsonify({'error': f'SERVER - Error occurred when adding a student: {str(e)}'}), 500
 
-@app.route('/student-dash', methods=['GET'])
+@app.route('/student-dash', methods=['GET', 'POST'])
 @require_role('student')
 def student_dash():
-    return jsonify({"message": "Welcome to the student dashboard!"})
+    classes = []
+    try:
+        data = request.json
+        if not data['studentId']:
+            return jsonify({'error':'Missing student ID'}), 400
+        
+        student_ref = db.collection('students').document(data.get('studentId'))
+        stud_data = student_ref.get().to_dict()
+    except Exception as e:
+        return jsonify({'message':f'SERVER - Error occured when fetching student dashboard: {str(e)}'}), 403
+    
+    return jsonify({"message": "Welcome to the student dashboard!", 'studentData':stud_data})
 
 @app.route("/server-test", methods=['POST', 'GET', 'OPTIONS'])
 def server_test():

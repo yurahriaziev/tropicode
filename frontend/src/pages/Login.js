@@ -54,9 +54,9 @@ export default function Login({ role }) {
                     navigate('/admin-dash')
                 } else if (result.role === 'tutor') {
                     console.log(result.googleConnected)
-                    navigate(`/tutor-dash/${result.tutorId}/${result.googleConnected}`)
+                    navigate(`/tutor-dash/${result.userId}/${result.googleConnected}`)
                 } else if (result.role === 'student') {
-                    navigate('/student-dash')
+                    navigate(`/student-dash/${result.userId}`)
                 }
             } else {
                 const result = await response.json();

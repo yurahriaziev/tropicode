@@ -47,7 +47,7 @@ function TutorDash() {
     useEffect(() => {
         const fetchStudents = async () => {
             if (!tutorId) {
-                setError('Tutor ID is missing')
+                setError('Tutor ID is missing!')
                 
             }
 
