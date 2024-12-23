@@ -79,3 +79,12 @@ def remove_user(collection, uid):
             print(f'{RED}User with id {uid} not found{RESET}')
     except Exception as e:
         print(f'{RED}SERVER - Error removing user {str(e)}{RESET}')
+
+def add_new_class(tutor_id, new_class):
+    try:
+        tutor_ref = db.collection('tutors').document(tutor_id)
+        tutor_ref.update({
+            'upcoming_classes':firestore.ArrayUnion([new_class])
+        })
+    except Exception as e:
+        print(f'{RED}SERVER - Error adding new class {str(e)}{RESET}')

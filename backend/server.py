@@ -1,6 +1,6 @@
 from config import app
 from flask import jsonify, request, session, redirect, url_for
-from firebase_setup import firestore, db, auth, add_tutor, remove_user, add_student
+from firebase_setup import firestore, db, auth, add_tutor, remove_user, add_student, add_new_class
 from functools import wraps
 import requests
 
@@ -160,6 +160,8 @@ def create_meeting():
         summary = data.get('summary')
         startTime = data.get('startTime')
         endTime = data.get('endTime')
+        student_id = data.get('assignedStudentId')
+        print(student_id)
         event = {
             'summary':summary,
             'start': {
@@ -188,7 +190,16 @@ def create_meeting():
         if response.status_code == 200:
             event_data = response.json()
             meet_link = event_data.get('hangoutLink')
-            return jsonify({'message': 'Meeting created successfully', 'meetLink': meet_link})
+
+            student_ref = db.collection('students').document(student_id)
+            student_ref.update({
+                'upcoming_classes':[{'link':meet_link, 'tutor_id':tutor_id}]
+            })
+            student_data = student_ref.get().to_dict()
+            new_class = {'link':meet_link, 'student_id':student_id}
+            add_new_class(tutor_id, new_class)
+
+            return jsonify({'message': 'Meeting created successfully', 'meetLink': meet_link, 'studentName':student_data.get('first') + ' ' + student_data.get('last')})
         else:
             return jsonify({'error': 'Failed to create meeting', 'details': response.json()}), 400
     except Exception as e:
@@ -286,6 +297,7 @@ def process_login():
 @require_role('tutor')
 def tutor_dash():    
     students = []
+    classes = []
     data = request.json
     try:
         tutor_id = data.get('tutorId')
@@ -310,10 +322,23 @@ def tutor_dash():
                 student_data = student_doc.to_dict()
                 student_data['id'] = student_doc.id
                 students.append(student_data)
+
+        tutor_classes = tutor_data.get('upcoming_classes', [])
+        for c in tutor_classes:
+            # {link:str link, student_id:str student_id}
+            if c['student_id']:
+                student_ref = db.collection('students').document(c.get('student_id'))
+                stud_data = student_ref.get().to_dict()
+                if not stud_data:
+                    return jsonify({'message':f'Student data for {c['student_id']} is not available'}), 400
+                
+                _class = {'link': c.get('link', ''), 'studentName':stud_data.get('first') + ' ' + stud_data.get('last')}
+                classes.append(_class)
+
     except Exception as e:
-        return jsonify({'error':f'SERVER - Error occured when fetching tutors: {str(e)}'}), 403
+        return jsonify({'message':f'SERVER - Error occured when fetching tutors: {str(e)}'}), 403
         
-    return jsonify({"message": "Welcome to the tutor dashboard!", "students":students, 'tutorData':tutor_data})
+    return jsonify({"message": "Welcome to the tutor dashboard!", "students":students, 'tutorData':tutor_data, 'upcomingClasses':classes})
 
 @app.route('/create-tutor', methods=['POST'])
 @require_role('admin')

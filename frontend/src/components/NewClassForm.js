@@ -1,15 +1,20 @@
 import React, { useState } from "react";
 
-export default function NewClassForm({ handleNewClassClick, setError, setSuccess, setMeetLink, createNewMeeting }) {
+export default function NewClassForm({ handleNewClassClick, setError, createNewMeeting, students }) {
     const [title, setTitle] = useState('')
     const [startTime, setStartTime] = useState("")
     const [endTime, setEndTime] = useState("")
+    const [assignedStudent, setAssignedStudent] = useState("")
 
     const handleStartTimeChange = (e) => {
         setStartTime(e.target.value)
     }
     const handleEndTimeChange = (e) => {
         setEndTime(e.target.value)
+    }
+
+    const handleAssignedStudentChange = (e) => {
+        setAssignedStudent(e.target.value)
     }
 
     const formatTimeToISO = (time) => {
@@ -35,7 +40,7 @@ export default function NewClassForm({ handleNewClassClick, setError, setSuccess
             const fStart = formatTimeToISO(startTime)
             const fEnd = formatTimeToISO(endTime)
 
-            createNewMeeting(title, fStart, fEnd)
+            createNewMeeting(title, fStart, fEnd, assignedStudent)
         } catch (err) {
             setError("An error occurred while creating the meeting.");
         }
@@ -99,6 +104,21 @@ export default function NewClassForm({ handleNewClassClick, setError, setSuccess
                             {endTimeOptions.map((time) => (
                                 <option key={time} value={time}>
                                     {time}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="assign-student-picker">Assign Student:</label>
+                        <select
+                            id="assign-student-picker"
+                            value={assignedStudent}
+                            onChange={handleAssignedStudentChange}
+                        >
+                            <option value="">--Select Student--</option>
+                            {students.map((student, index) => (
+                                <option key={index} value={student.id}>
+                                    {student.first + ' ' + student.last}
                                 </option>
                             ))}
                         </select>

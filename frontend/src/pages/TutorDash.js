@@ -15,8 +15,9 @@ function TutorDash() {
     const [tutorData, setTutorData] = useState({})
     const { googleConn } = useParams()
     const isGoogleConnected = googleConn === "true"
-    const [meetLink, setMeetLink] = useState('')
+    // const [meetLink, setMeetLink] = useState('')
     const [newClassForm, setNewClassForm] = useState(false)
+    const [upcomingClasses, setUpcomingClasses] = useState([])
 
     const handleAddStudentClick = (open) => {
         setAddStudentForm(open)
@@ -69,6 +70,7 @@ function TutorDash() {
                     console.log('Full result\n', result)    // LOG
                     setTutorData(result.tutorData)
                     setStudents(result.students)
+                    setUpcomingClasses(result.upcomingClasses)
                 } else {
                     const result = await response.json()
                     setError(result.message || "Error fetching students")
@@ -119,7 +121,7 @@ function TutorDash() {
         }
     }
 
-    const createNewMeeting = async( summary, startTime, endTime ) => {
+    const createNewMeeting = async( summary, startTime, endTime, assignedStudentId ) => {
         try {
             const response = await fetch('http://127.0.0.1:5000/create-meeting', {
                 method: 'POST',
@@ -127,12 +129,17 @@ function TutorDash() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
-                body: JSON.stringify({ tutorId, summary, startTime, endTime })
+                body: JSON.stringify({ tutorId, summary, startTime, endTime, assignedStudentId })
             })
 
             if (response.ok) {
                 const result = await response.json()
-                setMeetLink(result.meetLink)
+                const newClass = {
+                    link: result.meetLink,
+                    studentName: result.studentName
+                }
+                setUpcomingClasses((prevClasses => [...prevClasses, newClass]))
+                // setMeetLink(result.meetLink)
                 handleNewClassClick(false)
                 setSuccess('Class created successfully!')
             } else {
@@ -174,7 +181,7 @@ function TutorDash() {
             )}
             {newClassForm && (
                 <NewClassForm handleNewClassClick={handleNewClassClick} setError={setError}
-                setSuccess={setSuccess} setMeetLink={setMeetLink} createNewMeeting={createNewMeeting} />
+                createNewMeeting={createNewMeeting} students={students} />
             )}
             <div className="tutor-data-cont">
                 {tutorData && (
@@ -187,8 +194,19 @@ function TutorDash() {
             </div>
             <div className="classes-cont">
                 <h2>Upcoming classes</h2>
-                {meetLink && (
-                    <a href={meetLink} target="_blank" rel="noopener noreferrer">{meetLink}</a>
+                {upcomingClasses.length > 0 ? (
+                    <ul>
+                        {upcomingClasses.map((classData, index) => (
+                            <li key={index}>
+                                <a href={classData.link} target="_blank" rel="noopener noreferrer">
+                                    {classData.link}
+                                </a>
+                                <p>{classData.studentName}</p>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p>No upcoming classes yet.</p>
                 )}
             </div>
         </div>
