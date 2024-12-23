@@ -39,7 +39,9 @@ google = oauth.register(
     client_secret=CLIENT_SECRET,
     api_base_url='https://www.googleapis.com/oauth2/v1/',
     client_kwargs={
-        'scope': 'openid email profile https://www.googleapis.com/auth/calendar.events'
+        'scope': 'openid email profile https://www.googleapis.com/auth/calendar.events',
+        'access_token': 'offline',
+        'prompt': 'consent'
     },
     server_metadata_url= 'https://accounts.google.com/.well-known/openid-configuration'
 )
@@ -110,6 +112,8 @@ def google_callback():
 
         if 'refresh_token' in token:
             update_data['google_refresh_token'] = token['refresh_token']
+        else:
+            print_red("Warning: No refresh_token received. Reauthorization may be needed.")
 
         if 'expires_in' in token:
             update_data['token_expiry'] = datetime.datetime.utcnow() + datetime.timedelta(seconds=token['expires_in'])
@@ -135,7 +139,9 @@ def create_meeting():
         token_expiry = tutor_data.get('token_expiry')
 
         if not access_token or is_token_expired(token_expiry):
+            print_red('Not access token or token expired')
             if refresh_token:
+                print_red('Need to refresh token')
                 refreshed_token_data = refresh_access_token(refresh_token)
                 access_token = refreshed_token_data['access_token']
                 new_expiry = datetime.datetime.utcnow() + datetime.timedelta(seconds=refreshed_token_data['expires_in'])
@@ -193,6 +199,9 @@ Google meets create class logic END
 
 def print_err(err, err_code=None):
     print(f'{err_code} | SERVER ERROR--- {err}')
+
+def print_red(msg):
+    print(f'{RED}{msg}{RESET}')
 
 def require_role(required_role):
     def decorator(f):
@@ -252,8 +261,6 @@ def process_login():
             google_connected = bool(g_email)
         else:
             google_connected = None
-        print(g_email)
-        print(google_connected)
 
         payload = {
             "user_id": user_doc.id,
