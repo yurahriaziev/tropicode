@@ -68,10 +68,6 @@ export default function Login({ role }) {
         }
     }
 
-    const changeLogin = (role) => {
-        navigate(`/login-${role}`)
-    }
-
     return (
         <div className="login-cont">
             {error && (
@@ -80,7 +76,7 @@ export default function Login({ role }) {
                 </div>
             )}
             <div>
-                <h2>Login wiht your code</h2>
+                <h2>Student Login</h2>
                 <input 
                     type="text" 
                     placeholder="Enter Code" 
