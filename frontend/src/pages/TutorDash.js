@@ -23,9 +23,35 @@ function TutorDash() {
         setAddStudentForm(open)
         if (open) setSuccess('')
     }
-    const handleNewClassClick = (open) => {
-        setNewClassForm(open)
-        if (open) setSuccess('')
+    const handleNewClassClick = async(open) => {
+        try {
+            console.log('got here') // LOG
+            const token = localStorage.getItem("token")
+            const response = await fetch('http://127.0.0.1:5000/check-token', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ tutorId })
+            })
+
+            const result = await response.json();
+            if (response.ok) {
+                console.log('Token is valid or refreshed successfully.')
+                setNewClassForm(open)
+                if (open) setSuccess('')
+            } else {
+                window.location.href = `http://127.0.0.1:5000/google/login?tutorId=${tutorId}`
+                console.error(result.error)
+                setError(result.error)
+            }
+
+        } catch (error) {
+            console.log(error.message)  // LOG
+            setError(error.message)
+        }
     }
 
     const handleLogout = () => {
@@ -48,7 +74,6 @@ function TutorDash() {
         const fetchStudents = async () => {
             if (!tutorId) {
                 setError('Tutor ID is missing!')
-                
             }
 
             const token = localStorage.getItem("token")
@@ -63,7 +88,7 @@ function TutorDash() {
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({ tutorId })
-                });
+                })
     
                 if (response.ok) {
                     const result = await response.json()
@@ -146,6 +171,7 @@ function TutorDash() {
                 const error = await response.json()
                 console.log(error)  // LOG
                 setError(error.error)
+                window.location.href = `http://127.0.0.1:5000/google/login?tutorId=${tutorId}`
             }
         } catch (error) {
             console.error('Error:', error)  // LOG
@@ -172,7 +198,16 @@ function TutorDash() {
             </div>
             <div className="actions-cont">
                 <button onClick={() => handleAddStudentClick(true)}>Add student</button>
-                <button onClick={() => handleNewClassClick(true)}>Create a class</button>
+                <button 
+                    onClick={() => handleNewClassClick(true)}
+                    disabled={!isGoogleConnected}
+                    title={!isGoogleConnected ? 'Google Account Required' : ''}
+                    style={{
+                        backgroundColor: !isGoogleConnected && '#CCCCCC',
+                        cursor: isGoogleConnected ? 'pointer' : 'not-allowed',
+                    }}
+                >Create a class
+                </button>
                 {!isGoogleConnected && (<button onClick={() => connectGoogleAccount(tutorId)}>Connect Google Account</button>)}
             </div>
             {addStudentForm && (

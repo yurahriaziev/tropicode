@@ -17,10 +17,40 @@ from authlib.integrations.flask_client import OAuth
 import logging
 logging.basicConfig(level=logging.INFO)
 
+def require_role(required_role):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            auth_header = request.headers.get('Authorization')
+            if not auth_header or not auth_header.startswith('Bearer '):
+                return jsonify({'message': 'Authorization header missing or malformed'}), 403
+
+            try:
+                token = auth_header.split('Bearer ')[1]
+                payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+                user_role = payload.get('role')
+
+                if user_role != required_role:
+                    return jsonify({'error': 'Unauthorized role'}), 403
+
+                return f(*args, **kwargs)
+            except jwt.ExpiredSignatureError:
+                return jsonify({'message': 'Token has expired'}), 403
+            except jwt.InvalidTokenError:
+                return jsonify({'message': 'Invalid token'}), 403
+        return decorated_function
+    return decorator
+
+#################################### REMOVE ####################################
+#################################### REMOVE ####################################
+#################################### REMOVE ####################################
 SECRET_KEY = "543959eebc61e0d8b79a7bd76028e4afe24d2cbc783a195583f789a70d4f7902"
 GREEN = "\033[92m"
 RED = "\033[31m"
 RESET = "\033[0m"
+#################################### REMOVE ####################################
+#################################### REMOVE ####################################
+#################################### REMOVE ####################################
 
 '''
 Google meets create class logic START
@@ -127,6 +157,26 @@ def google_callback():
         tutor_dash_url = f"http://localhost:3000/tutor-dash/{tutor_id}/false"
         return redirect(tutor_dash_url)
     
+@app.route('/check-token', methods=['POST', 'GET'])
+@require_role('tutor')
+def check_token_expiry():
+    try:
+        tutor_id = request.json.get('tutorId')
+        tutor_ref = db.collection('tutors').document(tutor_id)
+        tutor_data = tutor_ref.get().to_dict()
+        if not tutor_data:
+            return jsonify({'error': 'Tutor not found'}), 404
+        
+        token_expiry = tutor_data.get('token_expiry')
+        if is_token_expired(token_expiry):
+            print_red('Token expired before creating new class')
+            return jsonify({'message': 'Refresh required'}), 401
+        else:
+            return jsonify({'message': 'Token is valid'}), 200
+    except Exception as e:
+        print_red(f'Error in /check-token: {str(e)}')
+        return jsonify({'error': 'Internal server error'}), 500
+        
 @app.route('/create-meeting', methods=['POST'])
 def create_meeting():
     try:
@@ -135,11 +185,13 @@ def create_meeting():
         tutor_ref = db.collection('tutors').document(tutor_id)
         tutor_data = tutor_ref.get().to_dict()
         access_token = tutor_data.get('google_access_token')
+        
+        tutor_ref = db.collection('tutors').document(tutor_id)
+        tutor_data = tutor_ref.get().to_dict()
         refresh_token = tutor_data.get('google_refresh_token')
         token_expiry = tutor_data.get('token_expiry')
-
-        if not access_token or is_token_expired(token_expiry):
-            print_red('Not access token or token expired')
+        if is_token_expired(token_expiry):
+            print_red('Token expired')
             if refresh_token:
                 print_red('Need to refresh token')
                 refreshed_token_data = refresh_access_token(refresh_token)
@@ -187,6 +239,7 @@ def create_meeting():
             headers=headers,
             json=event
         )
+        print_red('got here')
         if response.status_code == 200:
             event_data = response.json()
             meet_link = event_data.get('hangoutLink')
@@ -198,7 +251,6 @@ def create_meeting():
             student_data = student_ref.get().to_dict()
             new_class = {'link':meet_link, 'student_id':student_id}
             add_new_class(tutor_id, new_class)
-
             return jsonify({'message': 'Meeting created successfully', 'meetLink': meet_link, 'studentName':student_data.get('first') + ' ' + student_data.get('last')})
         else:
             return jsonify({'error': 'Failed to create meeting', 'details': response.json()}), 400
@@ -213,30 +265,6 @@ def print_err(err, err_code=None):
 
 def print_red(msg):
     print(f'{RED}{msg}{RESET}')
-
-def require_role(required_role):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            auth_header = request.headers.get('Authorization')
-            if not auth_header or not auth_header.startswith('Bearer '):
-                return jsonify({'message': 'Authorization header missing or malformed'}), 403
-
-            try:
-                token = auth_header.split('Bearer ')[1]
-                payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-                user_role = payload.get('role')
-
-                if user_role != required_role:
-                    return jsonify({'error': 'Unauthorized role'}), 403
-
-                return f(*args, **kwargs)
-            except jwt.ExpiredSignatureError:
-                return jsonify({'message': 'Token has expired'}), 403
-            except jwt.InvalidTokenError:
-                return jsonify({'message': 'Invalid token'}), 403
-        return decorated_function
-    return decorator
 
 @app.route("/process-login", methods=['POST'])
 def process_login():
@@ -311,8 +339,6 @@ def tutor_dash():
         
         tutor_data = tutor_doc.to_dict()
         student_ids = tutor_data.get('students', [])
-        if not student_ids:
-            return jsonify({'message':'No students yet', 'tutorData':tutor_data})
         
         for id in student_ids:
             student_ref = db.collection('students').document(id)
@@ -325,7 +351,6 @@ def tutor_dash():
 
         tutor_classes = tutor_data.get('upcoming_classes', [])
         for c in tutor_classes:
-            # {link:str link, student_id:str student_id}
             if c['student_id']:
                 student_ref = db.collection('students').document(c.get('student_id'))
                 stud_data = student_ref.get().to_dict()
@@ -351,7 +376,7 @@ def create_tutor():
             if field not in data or not data[field]:
                 return jsonify({'error':'Missing required fields'})
 
-        add_tutor(data['first'], data['last'], data['email'], data['age'], data['teaches'])
+        tutor_code = add_tutor(data['first'], data['last'], data['email'], data['age'], data['teaches'])
         
         tutors = []
         tutors_ref = db.collection('tutors')
@@ -359,6 +384,7 @@ def create_tutor():
         for doc in docs:
             tutor_data = doc.to_dict()
             tutor_data['id'] = doc.id
+            tutor_data['join_code'] = tutor_code
             tutors.append(tutor_data)
 
         return jsonify({
@@ -412,7 +438,10 @@ def admin_dash():
         docs = tutors_ref.get()
         for doc in docs:
             tutor_data = doc.to_dict()
+            tutor = db.collection('users').document(doc.id)
+            join_code = tutor.get().to_dict().get('userCode')
             tutor_data['id'] = doc.id
+            tutor_data['join_code'] = join_code
             tutors.append(tutor_data)
         print(f"{GREEN}Tutors fetched successfully: {len(tutors)}{RESET}")
     except Exception as e:

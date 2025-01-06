@@ -33,12 +33,14 @@ def add_tutor(first, last, email, age, teaches, students=[]):
     print(f'{YELLOW}Tutor {first, last} added to "tutors" collection with ID: {tutor_ref.id}{RESET}')
 
     user_ref = db.collection('users').document(tutor_ref.id)
+    code = generate_user_code()
     user_ref.set({
         'role':'tutor',
         'profileId':tutor_ref.id,
-        'userCode':generate_user_code()
+        'userCode':code
     })
     print(f'{BLUE}User {first, last} added to "users" collection with ID: {user_ref.id}{RESET}')
+    return code
 
 def add_student(first, last, age, tutor_id):
     student_ref = db.collection("students").document()
