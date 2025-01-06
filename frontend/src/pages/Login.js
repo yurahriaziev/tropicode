@@ -79,30 +79,18 @@ export default function Login({ role }) {
                     {error}
                 </div>
             )}
-            {role === 'student' ? (
-                <div>
-                    <h2>Student Login</h2>
-                    <input 
-                        type="text" 
-                        placeholder="Enter Code" 
-                        maxLength={4} 
-                        className="code-input" 
-                        value={userCode} 
-                        onChange={handleInput}
-                    />
-                    <button onClick={handleLogin}>Login</button>
-                </div>
-            ) : (
-                <div>
-                    <h2>Tutor Login</h2>
-                    <button>Google Sign In</button>
-                </div>
-            )}
-            {role === 'student' ? (
-                <button onClick={() => changeLogin('tutor')}>Tutor? Login here</button>
-            ) : (
-                <button onClick={() => changeLogin('student')}>Student? Login here</button>
-            )}
+            <div>
+                <h2>Login wiht your code</h2>
+                <input 
+                    type="text" 
+                    placeholder="Enter Code" 
+                    maxLength={4} 
+                    className="code-input" 
+                    value={userCode} 
+                    onChange={handleInput}
+                />
+                <button onClick={handleLogin}>Login</button>
+            </div>
         </div>
     )
 }

@@ -21,7 +21,9 @@
     "flask-start": "../backend/venv/bin/python ../backend/server.py",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -42,6 +44,8 @@
     ]
   },
   "devDependencies": {
-    "concurrently": "^9.0.1"
-  }
+    "concurrently": "^9.0.1",
+    "gh-pages": "^6.3.0"
+  },
+  "homepage": "https://<yurahriaziev>.github.io/<student-tutor-space>"
 }
