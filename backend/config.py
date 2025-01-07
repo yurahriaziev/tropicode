@@ -8,4 +8,4 @@ app.secret_key = os.urandom(24)
 
 # app.config['SESSION_TYPE'] = 'filesystem'
 # Session(app)
-CORS(app, resources={r"/*": {"origins": {"http://localhost:3000", "https://yurahriaziev.github.io/student-tutor-space/#"}}})
+CORS(app, resources={r"/*": {"origins": {"http://localhost:3000", "https://yurahriaziev.github.io"}}})
