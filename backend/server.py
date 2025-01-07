@@ -335,7 +335,7 @@ def tutor_dash():
         tutor_ref = db.collection('tutors').document(tutor_id)
         tutor_doc = tutor_ref.get()
         if not tutor_doc:
-            return jsonify({'error':f'User with ID: {data['tutorId']} does not exist'})
+            return jsonify({'error':f"User with ID: {data['tutorId']} does not exist"})
         
         tutor_data = tutor_doc.to_dict()
         student_ids = tutor_data.get('students', [])
@@ -355,7 +355,7 @@ def tutor_dash():
                 student_ref = db.collection('students').document(c.get('student_id'))
                 stud_data = student_ref.get().to_dict()
                 if not stud_data:
-                    return jsonify({'message':f'Student data for {c['student_id']} is not available'}), 400
+                    return jsonify({'message':f"Student data for {c['student_id']} is not available"}), 400
                 
                 _class = {'link': c.get('link', ''), 'studentName':stud_data.get('first') + ' ' + stud_data.get('last')}
                 classes.append(_class)
