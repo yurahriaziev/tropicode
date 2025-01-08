@@ -6,6 +6,7 @@ import requests
 
 import jwt
 import os
+from dotenv import load_dotenv
 import datetime
 from datetime import timezone
 import json
@@ -41,21 +42,16 @@ def require_role(required_role):
         return decorated_function
     return decorator
 
-#################################### REMOVE ####################################
-#################################### REMOVE ####################################
-#################################### REMOVE ####################################
-SECRET_KEY = "543959eebc61e0d8b79a7bd76028e4afe24d2cbc783a195583f789a70d4f7902"
+load_dotenv()
+SECRET_KEY = os.getenv('SECRET_KEY')
+CLIENTS_SECRETS = os.getenv('CLIENTS_SECRETS_PATH')
 GREEN = "\033[92m"
 RED = "\033[31m"
 RESET = "\033[0m"
-#################################### REMOVE ####################################
-#################################### REMOVE ####################################
-#################################### REMOVE ####################################
 
 '''
 Google meets create class logic START
 '''
-CLIENTS_SECRETS = '../backend/client_secret.json'
 with open(CLIENTS_SECRETS, "r") as file:
     client_secrets = json.load(file)
 

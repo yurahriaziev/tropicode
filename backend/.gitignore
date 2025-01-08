@@ -4,3 +4,4 @@ test_db.py
 client_secret.json
 tropicode_service.json
 /user_creds
+.env

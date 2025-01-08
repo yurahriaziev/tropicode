@@ -3,6 +3,8 @@ from firebase_admin import credentials, firestore, auth
 
 import random
 import string
+import os
+from dotenv import load_dotenv
 
 YELLOW = "\033[93m"
 BLUE = "\033[94m"
@@ -10,7 +12,10 @@ RESET = "\033[0m"
 RED = "\033[31m"
 GREEN = "\033[92m"
 
-cred = credentials.Certificate('../backend/firebase-key.json')
+load_dotenv()
+FIREBASE_PATH = os.getenv('FIREBASE_SECRET_PATH')
+
+cred = credentials.Certificate(FIREBASE_PATH)
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
