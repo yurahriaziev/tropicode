@@ -147,10 +147,12 @@ def google_callback():
         tutor_ref.update(update_data)
         print(google_id)
 
-        tutor_dash_url = f"http://localhost:3000/tutor-dash/{tutor_id}/true"
+        tutor_dash_url = f"http://localhost:3000/#/tutor-dash/{tutor_id}/true"
+        print('got here 1')
         return redirect(tutor_dash_url)
     except Exception as e:
-        tutor_dash_url = f"http://localhost:3000/tutor-dash/{tutor_id}/false"
+        print('got here 2')
+        tutor_dash_url = f"http://localhost:3000/#/tutor-dash/{tutor_id}/false"
         return redirect(tutor_dash_url)
     
 @app.route('/check-token', methods=['POST', 'GET'])
