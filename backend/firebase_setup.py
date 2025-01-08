@@ -13,7 +13,7 @@ RED = "\033[31m"
 GREEN = "\033[92m"
 
 load_dotenv()
-FIREBASE_PATH = os.getenv('FIREBASE_SECRET_PATH')
+FIREBASE_PATH = os.getenv('FIREBASE_KEY_PATH')
 
 cred = credentials.Certificate(FIREBASE_PATH)
 firebase_admin.initialize_app(cred)

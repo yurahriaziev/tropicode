@@ -44,7 +44,7 @@ def require_role(required_role):
 
 load_dotenv()
 SECRET_KEY = os.getenv('SECRET_KEY')
-CLIENTS_SECRETS = os.getenv('CLIENTS_SECRETS_PATH')
+CLIENTS_SECRETS = os.getenv('CLIENTS_SECRETS_PATH_E')
 GREEN = "\033[92m"
 RED = "\033[31m"
 RESET = "\033[0m"
@@ -494,4 +494,4 @@ def server_test():
     return jsonify({'message': 'Server OK'})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
