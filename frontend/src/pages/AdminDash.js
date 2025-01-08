@@ -3,6 +3,7 @@ import withAuth from "../withAuth";
 import NewTutorForm from "../components/NewTutorForm";
 import { useNavigate } from "react-router-dom";
 import AdminTutorInfo from "../components/AdminTutorInfo";
+import API_BASE_URL from "../config";
 
 function AdminDash() {
     const [error, setError] = useState('')
@@ -35,7 +36,7 @@ function AdminDash() {
     const handleRemoveTutor = async(uid) => {
         try {
             const token = localStorage.getItem("token")
-            const response = await fetch('http://127.0.0.1:5000/remove-tutor', {
+            const response = await fetch(`${API_BASE_URL}/remove-tutor`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
@@ -64,7 +65,7 @@ function AdminDash() {
         const fetchTutors = async () => {
             const token = localStorage.getItem("token")
             try {
-                const response = await fetch('http://127.0.0.1:5000/admin-dash', {
+                const response = await fetch(`${API_BASE_URL}/admin-dash`, {
                     method: "GET",
                     headers: {
                         'Content-Type': 'application/json',

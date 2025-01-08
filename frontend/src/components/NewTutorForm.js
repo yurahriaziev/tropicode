@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import API_BASE_URL from "../config";
 
 export default function NewTutorForm({ handleAddTutorClick, setError, setSuccess, setTutors }) {
     const [first, setFirst] = useState('')
@@ -24,7 +25,7 @@ export default function NewTutorForm({ handleAddTutorClick, setError, setSuccess
         try {
             const token = localStorage.getItem("token")
             console.log("Authorization Token:", token);
-            const response = await fetch('http://127.0.0.1:5000/create-tutor', 
+            const response = await fetch(`${API_BASE_URL}/create-tutor`, 
                 {
                     method: "POST",
                     headers: {

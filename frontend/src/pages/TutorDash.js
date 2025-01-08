@@ -4,6 +4,7 @@ import NewStudentForm from "../components/NewStudentForm";
 import { useNavigate, useParams } from "react-router-dom";
 import TutorStudentsList from "../components/TutorStudentsList";
 import NewClassForm from "../components/NewClassForm";
+import API_BASE_URL from "../config";
 
 function TutorDash() {
     const { tutorId } = useParams()
@@ -27,7 +28,7 @@ function TutorDash() {
         try {
             console.log('got here') // LOG
             const token = localStorage.getItem("token")
-            const response = await fetch('http://127.0.0.1:5000/check-token', {
+            const response = await fetch(`${API_BASE_URL}/check-token`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
@@ -43,7 +44,7 @@ function TutorDash() {
                 setNewClassForm(open)
                 if (open) setSuccess('')
             } else {
-                window.location.href = `http://127.0.0.1:5000/google/login?tutorId=${tutorId}`
+                window.location.href = `${API_BASE_URL}/google/login?tutorId=${tutorId}`
                 console.error(result.error)
                 setError(result.error)
             }

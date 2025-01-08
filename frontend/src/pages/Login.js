@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import API_BASE_URL from "../config";
 
 export default function Login({ role }) {
     const [userCode, setUserCode] = useState('')
@@ -30,7 +31,7 @@ export default function Login({ role }) {
         console.log('login btn clicked', userCode) // LOG
 
         try {
-            const response = await fetch("http://127.0.0.1:5000/process-login", {
+            const response = await fetch(`${API_BASE_URL}/process-login`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import withAuth from "../withAuth";
 import { useNavigate, useParams } from "react-router-dom";
+import API_BASE_URL from "../config";
 
 function StudentDash() {
     const navigate = useNavigate()
@@ -24,7 +25,7 @@ function StudentDash() {
 
             const token = localStorage.getItem('token')
             try {
-                const response = await fetch('http://127.0.0.1:5000/student-dash', {
+                const response = await fetch(`${API_BASE_URL}/student-dash`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

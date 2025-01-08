@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import API_BASE_URL from "../config";
 
 export default function NewStudentForm({ handleAddStudentClick, setError, setSuccess, setStudents, tutorId }) {
     const [first, setFirst] = useState('')
@@ -19,7 +20,7 @@ export default function NewStudentForm({ handleAddStudentClick, setError, setSuc
         try {
             const token = localStorage.getItem("token")
             console.log("Authorization Token:", token);
-            const response = await fetch('http://127.0.0.1:5000/create-student', 
+            const response = await fetch(`${API_BASE_URL}/create-student`, 
                 {
                     method: "POST",
                     headers: {
