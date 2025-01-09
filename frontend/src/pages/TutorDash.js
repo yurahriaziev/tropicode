@@ -81,7 +81,7 @@ function TutorDash() {
             console.log(tutorId)
             console.log(googleConn)
             try {
-                const response = await fetch('http://127.0.0.1:5000/tutor-dash', {
+                const response = await fetch(`${API_BASE_URL}/tutor-dash`, {
                     method: "POST",
                     headers: {
                         'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ function TutorDash() {
     const handleRemoveStudent = async(uid) => {
         try {
             const token = localStorage.getItem("token")
-            const response = await fetch('http://127.0.0.1:5000/remove-student', {
+            const response = await fetch(`${API_BASE_URL}/remove-student`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
@@ -140,7 +140,7 @@ function TutorDash() {
 
     const connectGoogleAccount = async(tutorId) => {
         try {
-            window.location.href = `http://127.0.0.1:5000/google/login?tutorId=${tutorId}`
+            window.location.href = `${API_BASE_URL}/google/login?tutorId=${tutorId}`
         } catch (error) {
             console.error('Error occurred:', error)  // LOG
             setError('An unexpected error occurred. Please try again.')
@@ -149,7 +149,7 @@ function TutorDash() {
 
     const createNewMeeting = async( summary, startTime, endTime, assignedStudentId ) => {
         try {
-            const response = await fetch('http://127.0.0.1:5000/create-meeting', {
+            const response = await fetch(`${API_BASE_URL}/create-meeting`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -172,7 +172,7 @@ function TutorDash() {
                 const error = await response.json()
                 console.log(error)  // LOG
                 setError(error.error)
-                window.location.href = `http://127.0.0.1:5000/google/login?tutorId=${tutorId}`
+                window.location.href = `${API_BASE_URL}/google/login?tutorId=${tutorId}`
             }
         } catch (error) {
             console.error('Error:', error)  // LOG
