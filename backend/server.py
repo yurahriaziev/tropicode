@@ -110,12 +110,12 @@ def google_login():
 
 @app.route('/oauth2callback')
 def google_callback():
+    token = google.authorize_access_token()
+    user_info = google.get('userinfo').json()
+
+    state = request.args.get('state')
     try:
         print('GOT HERE')
-        token = google.authorize_access_token()
-        user_info = google.get('userinfo').json()
-
-        state = request.args.get('state')
         if not state:
             return jsonify({'error': 'State parameter is missing'}), 400
         
