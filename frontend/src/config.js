@@ -1,2 +1,2 @@
-const API_BASE_URL = 'https://54.174.240.178'
+const API_BASE_URL = 'https://tropicode.duckdns.org'
 export default API_BASE_URL
