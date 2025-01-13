@@ -77,7 +77,7 @@ export default function Login({ role }) {
                 </div>
             )}
             <div>
-                <h2>Student Login</h2>
+                <h2>Login with your code</h2>
                 <input 
                     type="text" 
                     placeholder="Enter Code" 
