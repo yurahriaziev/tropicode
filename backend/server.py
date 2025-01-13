@@ -1,4 +1,4 @@
-from config import app
+from config import app, production_url
 from flask import jsonify, request, session, redirect, url_for
 from firebase_setup import firestore, db, auth, add_tutor, remove_user, add_student, add_new_class
 from functools import wraps
@@ -147,13 +147,13 @@ def google_callback():
         tutor_ref.update(update_data)
         print(google_id)
 
-        tutor_dash_url = f"http://localhost:3000/#/tutor-dash/{tutor_id}/true"
+        tutor_dash_url = f"{production_url}/#/tutor-dash/{tutor_id}/true"
         print('got here 1')
         return redirect(tutor_dash_url)
     except Exception as e:
         print('got here 2')
         print(str(e))
-        tutor_dash_url = f"http://localhost:3000/#/tutor-dash/{tutor_id}/false"
+        tutor_dash_url = f"{production_url}/#/tutor-dash/{tutor_id}/false"
         return redirect(tutor_dash_url)
     
 @app.route('/check-token', methods=['POST', 'GET'])
