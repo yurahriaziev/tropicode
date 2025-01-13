@@ -110,6 +110,7 @@ def google_login():
 
 @app.route('/oauth2callback')
 def google_callback():
+    tutor_id = None
     try:
         token = google.authorize_access_token()
         user_info = google.get('userinfo').json()
@@ -153,7 +154,9 @@ def google_callback():
     except Exception as e:
         print('got here 2')
         print(str(e))
-        tutor_dash_url = f"{production_url}/#/tutor-dash/{tutor_id}/false"
+        # tutor_dash_url = f"{production_url}/#/tutor-dash/{tutor_id}/false"
+        # return redirect(tutor_dash_url)
+        tutor_dash_url = f"{production_url}/#/tutor-dash/{tutor_id}/false" if tutor_id else f"{production_url}/#/error"
         return redirect(tutor_dash_url)
     
 @app.route('/check-token', methods=['POST', 'GET'])
