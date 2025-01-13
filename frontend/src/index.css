@@ -15,10 +15,13 @@ code {
 html, body {
   height: 100%;
   margin: 0;
+}
+
+.login-cont {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-}
-.login-cont {
+  height: 100vh;
   text-align: center;
 }
