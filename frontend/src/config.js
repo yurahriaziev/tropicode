@@ -1,2 +1,2 @@
-const API_BASE_URL = 'https://tropicode.duckdns.org'
+const API_BASE_URL = 'https://tropicode.tech'
 export default API_BASE_URL
