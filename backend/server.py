@@ -156,6 +156,9 @@ def google_callback():
     except Exception as e:
         print('got here 2')
         print(str(e))
+        state = request.args.get('state')
+        state_data = json.loads(state)
+        tutor_id = state_data.get('tutorId')
         # tutor_dash_url = f"{production_url}/#/tutor-dash/{tutor_id}/false"
         # return redirect(tutor_dash_url)
         tutor_dash_url = f"{production_url}/#/tutor-dash/{tutor_id}/false" if tutor_id else f"{production_url}/#/error"
