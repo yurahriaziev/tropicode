@@ -117,7 +117,9 @@ def google_callback():
 
         state = request.args.get('state')
         print('GOT HERE')
+        print(f"State parameter: {state}")
         if not state:
+            print("State parameter is missing!")
             return jsonify({'error': 'State parameter is missing'}), 400
         
         try:
