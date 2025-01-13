@@ -152,6 +152,7 @@ def google_callback():
         return redirect(tutor_dash_url)
     except Exception as e:
         print('got here 2')
+        print(str(e))
         tutor_dash_url = f"http://localhost:3000/#/tutor-dash/{tutor_id}/false"
         return redirect(tutor_dash_url)
     
