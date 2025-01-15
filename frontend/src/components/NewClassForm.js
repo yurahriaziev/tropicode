@@ -47,20 +47,28 @@ export default function NewClassForm({ handleNewClassClick, setError, createNewM
     }
 
     const startTimeOptions = []
-    for (let hour = 15; hour <= 17; hour++) {
-        for (let min = 0; min < 60; min+=30) {
-            if (hour === 17 && min > 30) break
+    for (let hour = 15; hour <= 18; hour++) {
+        for (let min = 0; min < 60; min+=15) {
+            if (hour === 18 && min > 0) break
             const formatedTime = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`
             startTimeOptions.push(formatedTime)
         }
     }
     const endTimeOptions = []
-    for (let hour = 16; hour <= 18; hour++) {
-        for (let min = 0; min < 60; min+=30) {
-            if (hour === 17 && min > 30) break
+    for (let hour = 16; hour <= 19; hour++) {
+        for (let min = 0; min < 60; min+=15) {
+            if (hour === 19 && min > 0) break
             const formatedTime = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`
             endTimeOptions.push(formatedTime)
         }
+    }
+
+    function displayStandardTime(time) {
+        const [hours, minutss] = time.split(':').map(Number)
+        const suffix = hours >= 12 ? 'PM' : 'AM'
+        const standardHours = hours % 12 || 12
+
+        return `${standardHours}:${minutss.toString().padStart(2, '0')}${suffix}`
     }
 
     return (
@@ -88,7 +96,7 @@ export default function NewClassForm({ handleNewClassClick, setError, createNewM
                             <option value="">--Select Start Time--</option>
                             {startTimeOptions.map((time) => (
                                 <option key={time} value={time}>
-                                    {time}
+                                    {displayStandardTime(time)}
                                 </option>
                             ))}
                         </select>
@@ -103,7 +111,7 @@ export default function NewClassForm({ handleNewClassClick, setError, createNewM
                             <option value="">--Select End Time--</option>
                             {endTimeOptions.map((time) => (
                                 <option key={time} value={time}>
-                                    {time}
+                                    {displayStandardTime(time)}
                                 </option>
                             ))}
                         </select>

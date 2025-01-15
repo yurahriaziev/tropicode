@@ -28,7 +28,6 @@ export default function Login({ role }) {
     const handleLogin = async(e) => {
         setError('')
         e.preventDefault()
-        console.log('login btn clicked', userCode) // LOG
 
         try {
             const response = await fetch(`${API_BASE_URL}/process-login`, {
@@ -41,9 +40,6 @@ export default function Login({ role }) {
 
             if (response.ok) {
                 const result = await response.json();
-                console.log(result.message);    // LOG
-                console.log(result.role);       // LOG
-                console.log(result.token);      // LOG
                 setError('')
 
                 localStorage.setItem("role", result.role)
@@ -54,7 +50,6 @@ export default function Login({ role }) {
                 if (result.role === 'admin') {
                     navigate('/admin-dash')
                 } else if (result.role === 'tutor') {
-                    console.log(result.googleConnected)
                     navigate(`/tutor-dash/${result.userId}/${result.googleConnected}`)
                 } else if (result.role === 'student') {
                     navigate(`/student-dash/${result.userId}`)

@@ -1,6 +1,6 @@
 from config import app, production_url
 from flask import jsonify, request, session, redirect, url_for
-from firebase_setup import firestore, db, auth, add_tutor, remove_user, add_student, add_new_class
+from firebase_setup import firestore, db, auth, add_tutor, remove_user, add_student, add_new_class, remove_class_db
 from functools import wraps
 import requests
 
@@ -12,11 +12,25 @@ from datetime import timezone
 import json
 import uuid
 from urllib.parse import urlencode
+import string
+import secrets
+from pytz import timezone
+from dateutil.parser import parse
 
 from authlib.integrations.flask_client import OAuth
 
 import logging
 logging.basicConfig(level=logging.INFO)
+
+def generate_class_id(length):
+    chars = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(chars) for _ in range(length))
+
+def format_time_to_est(iso_time):
+    utc_time = parse(iso_time)
+    est = timezone('America/New_York')
+    est_time = utc_time.astimezone(est)
+    return est_time.strftime('%I:%M%p')
 
 def require_role(required_role):
     def decorator(f):
@@ -44,7 +58,7 @@ def require_role(required_role):
 
 load_dotenv()
 SECRET_KEY = os.getenv('SECRET_KEY')
-CLIENTS_SECRETS = os.getenv('CLIENTS_SECRETS_PATH_E')
+CLIENTS_SECRETS = os.getenv('CLIENTS_SECRETS_PATH')
 GREEN = "\033[92m"
 RED = "\033[31m"
 RESET = "\033[0m"
@@ -90,7 +104,7 @@ def refresh_access_token(refresh_token):
 def is_token_expired(token_expiry):
     if not token_expiry:
         return True
-    now = datetime.datetime.utcnow().replace(tzinfo=timezone.utc)
+    now = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
     return token_expiry < now
 
 @app.route('/google/login', methods=['GET'])
@@ -107,62 +121,50 @@ def google_login():
     state = json.dumps({'tutorId':tutor_id})
     redirect_uri = url_for('google_callback', _external=True)
     return google.authorize_redirect(redirect_uri, state=state)
-
+    
 @app.route('/oauth2callback')
 def google_callback():
-    tutor_id = None
+    token = google.authorize_access_token()
+    user_info = google.get('userinfo').json()
+
+    state = request.args.get('state')
+    print('GOT HERE')
+    print(f"State parameter: {state}")
+    if not state:
+        print("State parameter is missing!")
+        return jsonify({'error': 'State parameter is missing'}), 400
+    
     try:
-        token = google.authorize_access_token()
-        user_info = google.get('userinfo').json()
-
-        state = request.args.get('state')
-        print('GOT HERE')
-        print(f"State parameter: {state}")
-        if not state:
-            print("State parameter is missing!")
-            return jsonify({'error': 'State parameter is missing'}), 400
-        
-        try:
-            state_data = json.loads(state)
-            tutor_id = state_data.get('tutorId')
-            if not tutor_id:
-                return jsonify({'error': 'Tutor ID is missing from state'}), 400
-        except json.JSONDecodeError:
-            return jsonify({'error': 'Failed to decode state parameter'}), 400
-        print('GOT HERE')
-        email = user_info.get('email')
-        google_id = user_info.get('id')
-        tutor_ref = db.collection('tutors').document(tutor_id)
-        update_data = {
-            'google_email': email,
-            'google_id': google_id,
-            'google_access_token': token['access_token'],
-        }
-
-        if 'refresh_token' in token:
-            update_data['google_refresh_token'] = token['refresh_token']
-        else:
-            print_red("Warning: No refresh_token received. Reauthorization may be needed.")
-
-        if 'expires_in' in token:
-            update_data['token_expiry'] = datetime.datetime.utcnow() + datetime.timedelta(seconds=token['expires_in'])
-
-        tutor_ref.update(update_data)
-        print(google_id)
-
-        tutor_dash_url = f"{production_url}/#/tutor-dash/{tutor_id}/true"
-        print('got here 1')
-        return redirect(tutor_dash_url)
-    except Exception as e:
-        print('got here 2')
-        print(str(e))
-        state = request.args.get('state')
         state_data = json.loads(state)
         tutor_id = state_data.get('tutorId')
-        # tutor_dash_url = f"{production_url}/#/tutor-dash/{tutor_id}/false"
-        # return redirect(tutor_dash_url)
-        tutor_dash_url = f"{production_url}/#/tutor-dash/{tutor_id}/false" if tutor_id else f"{production_url}/#/error"
-        return redirect(tutor_dash_url)
+        if not tutor_id:
+            return jsonify({'error': 'Tutor ID is missing from state'}), 400
+    except json.JSONDecodeError:
+        return jsonify({'error': 'Failed to decode state parameter'}), 400
+    print('GOT HERE')
+    email = user_info.get('email')
+    google_id = user_info.get('id')
+    tutor_ref = db.collection('tutors').document(tutor_id)
+    update_data = {
+        'google_email': email,
+        'google_id': google_id,
+        'google_access_token': token['access_token'],
+    }
+
+    if 'refresh_token' in token:
+        update_data['google_refresh_token'] = token['refresh_token']
+    else:
+        print_red("Warning: No refresh_token received. Reauthorization may be needed.")
+
+    if 'expires_in' in token:
+        update_data['token_expiry'] = datetime.datetime.utcnow() + datetime.timedelta(seconds=token['expires_in'])
+
+    tutor_ref.update(update_data)
+    print(google_id)
+
+    tutor_dash_url = f"{production_url}/#/tutor-dash/{tutor_id}/true"
+    print('got here 1')
+    return redirect(tutor_dash_url)
     
 @app.route('/check-token', methods=['POST', 'GET'])
 @require_role('tutor')
@@ -184,6 +186,7 @@ def check_token_expiry():
         print_red(f'Error in /check-token: {str(e)}')
         return jsonify({'error': 'Internal server error'}), 500
         
+
 @app.route('/create-meeting', methods=['POST'])
 def create_meeting():
     try:
@@ -210,7 +213,7 @@ def create_meeting():
                 })
             else:
                 return jsonify({'error': 'Google account is not connected.'}), 403
-        
+
         headers = {
             'Authorization':f'Bearer {access_token}',
             'Content-Type':'application/json'
@@ -220,6 +223,9 @@ def create_meeting():
         startTime = data.get('startTime')
         endTime = data.get('endTime')
         student_id = data.get('assignedStudentId')
+
+        start_est = format_time_to_est(startTime)
+        end_est = format_time_to_est(endTime)
         print(student_id)
         event = {
             'summary':summary,
@@ -250,15 +256,21 @@ def create_meeting():
         if response.status_code == 200:
             event_data = response.json()
             meet_link = event_data.get('hangoutLink')
+            class_id = generate_class_id(20)
 
             student_ref = db.collection('students').document(student_id)
             student_ref.update({
-                'upcoming_classes':[{'link':meet_link, 'tutor_id':tutor_id}]
+                'upcoming_classes':firestore.ArrayUnion([class_id])
             })
-            student_data = student_ref.get().to_dict()
-            new_class = {'link':meet_link, 'student_id':student_id}
-            add_new_class(tutor_id, new_class)
-            return jsonify({'message': 'Meeting created successfully', 'meetLink': meet_link, 'studentName':student_data.get('first') + ' ' + student_data.get('last')})
+            
+
+            add_new_class(tutor_id, class_id)
+
+            new_class = {'link':meet_link, 'student_id':student_id, 'tutor_id':tutor_id, 'class_id':class_id, 'start':start_est, 'end':end_est, 'title':summary}
+
+            classes_ref = db.collection('classes')
+            classes_ref.document(class_id).set(new_class)
+            return jsonify({'message': 'Meeting created successfully', 'class':new_class})
         else:
             return jsonify({'error': 'Failed to create meeting', 'details': response.json()}), 400
     except Exception as e:
@@ -357,20 +369,25 @@ def tutor_dash():
                 students.append(student_data)
 
         tutor_classes = tutor_data.get('upcoming_classes', [])
-        for c in tutor_classes:
-            if c['student_id']:
-                student_ref = db.collection('students').document(c.get('student_id'))
-                stud_data = student_ref.get().to_dict()
-                if not stud_data:
-                    return jsonify({'message':f"Student data for {c['student_id']} is not available"}), 400
-                
-                _class = {'link': c.get('link', ''), 'studentName':stud_data.get('first') + ' ' + stud_data.get('last')}
-                classes.append(_class)
+        for c_id in tutor_classes:
+            class_ref = db.collection('classes').document(c_id)
+            class_data = class_ref.get().to_dict()
+            classes.append(class_data)
 
     except Exception as e:
-        return jsonify({'message':f'SERVER - Error occured when fetching tutors: {str(e)}'}), 403
+        return jsonify({'message':f'SERVER - /tutor-dash - Error occured when fetching tutor data: {str(e)}'}), 403
         
     return jsonify({"message": "Welcome to the tutor dashboard!", "students":students, 'tutorData':tutor_data, 'upcomingClasses':classes})
+
+@app.route('/remove-class', methods=['POST'])
+@require_role('tutor')
+def remove_class():
+    try:
+        data = request.json
+        message = remove_class_db(data.get('tutorId'), data.get('studentId'), data.get('classId'))
+        return jsonify({'message':message}), 200
+    except Exception as e:
+        return jsonify({'error':f'SERVER - Error occured when fetching tutors: {str(e)}'}), 403
 
 @app.route('/create-tutor', methods=['POST'])
 @require_role('admin')
@@ -503,4 +520,5 @@ def server_test():
     return jsonify({'message': 'Server OK'})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)

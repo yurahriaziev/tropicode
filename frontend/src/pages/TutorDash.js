@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import TutorStudentsList from "../components/TutorStudentsList";
 import NewClassForm from "../components/NewClassForm";
 import API_BASE_URL from "../config";
+import TutorClassList from "../components/TutorClassList";
 
 function TutorDash() {
     const { tutorId } = useParams()
@@ -26,7 +27,6 @@ function TutorDash() {
     }
     const handleNewClassClick = async(open) => {
         try {
-            console.log('got here') // LOG
             const token = localStorage.getItem("token")
             const response = await fetch(`${API_BASE_URL}/check-token`, {
                 method: "POST",
@@ -40,7 +40,6 @@ function TutorDash() {
 
             const result = await response.json();
             if (response.ok) {
-                console.log('Token is valid or refreshed successfully.')
                 setNewClassForm(open)
                 if (open) setSuccess('')
             } else {
@@ -69,7 +68,13 @@ function TutorDash() {
             }, 5000)
             return () => clearTimeout(timer)
         }
-    }, [success])
+        if (error) {
+            const timer = setTimeout(() => {
+                setError('')
+            }, 5000)
+            return () => clearTimeout(timer)
+        }
+    }, [success, error])
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -78,8 +83,6 @@ function TutorDash() {
             }
 
             const token = localStorage.getItem("token")
-            console.log(tutorId)
-            console.log(googleConn)
             try {
                 const response = await fetch(`${API_BASE_URL}/tutor-dash`, {
                     method: "POST",
@@ -93,10 +96,10 @@ function TutorDash() {
     
                 if (response.ok) {
                     const result = await response.json()
-                    console.log('Full result\n', result)    // LOG
                     setTutorData(result.tutorData)
                     setStudents(result.students)
                     setUpcomingClasses(result.upcomingClasses)
+                    console.log(result.upcomingClasses)
                 } else {
                     const result = await response.json()
                     setError(result.message || "Error fetching students")
@@ -138,6 +141,34 @@ function TutorDash() {
         }
     }
 
+    const handleRemoveClass = async(classId, studentId) => {
+        try {
+            const token = localStorage.getItem("token")
+            const response = await fetch(`${API_BASE_URL}/remove-class`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({tutorId, studentId, classId})
+            })
+
+            if (response.ok) {
+                const result = await response.json()
+                setSuccess(result.message)
+                setUpcomingClasses((prevClasses) => prevClasses.filter(_class => _class.class_id !== classId))
+            } else {
+                const result = await response.json();
+                setError(result.error || "Error removing class")
+                console.error(result.error)    // LOG
+            }
+        } catch(error) {
+            console.log(error.message)  // LOG
+            setError(error.message)
+        }
+    }
+
     const connectGoogleAccount = async(tutorId) => {
         try {
             window.location.href = `${API_BASE_URL}/google/login?tutorId=${tutorId}`
@@ -160,12 +191,7 @@ function TutorDash() {
 
             if (response.ok) {
                 const result = await response.json()
-                const newClass = {
-                    link: result.meetLink,
-                    studentName: result.studentName
-                }
-                setUpcomingClasses((prevClasses => [...prevClasses, newClass]))
-                // setMeetLink(result.meetLink)
+                setUpcomingClasses((prevClasses => [...prevClasses, result.class]))
                 handleNewClassClick(false)
                 setSuccess('Class created successfully!')
             } else {
@@ -195,7 +221,7 @@ function TutorDash() {
             <button onClick={handleLogout}>Logout</button>
             <div className="header-cont">
                 <h1>Welcome Tutor</h1>
-                <h2>{tutorData.email} | {tutorId} | {isGoogleConnected ? 'Google Account Connected' : 'Connect Google Account'}</h2>
+                <h2>{tutorData.email} | {isGoogleConnected ? 'Google Account Connected' : 'Connect Google Account'}</h2>
             </div>
             <div className="actions-cont">
                 <button onClick={() => handleAddStudentClick(true)}>Add student</button>
@@ -219,31 +245,18 @@ function TutorDash() {
                 <NewClassForm handleNewClassClick={handleNewClassClick} setError={setError}
                 createNewMeeting={createNewMeeting} students={students} />
             )}
-            <div className="tutor-data-cont">
+            {/* <div className="tutor-data-cont">
                 {tutorData && (
                     <h3>{tutorData.email}</h3>
                 )}
-            </div>
+            </div> */}
             <div className="students-cont">
                 <h2>Your students</h2>
                 <TutorStudentsList students={students} handleRemoveStudent={handleRemoveStudent} />
             </div>
             <div className="classes-cont">
                 <h2>Upcoming classes</h2>
-                {upcomingClasses.length > 0 ? (
-                    <ul>
-                        {upcomingClasses.map((classData, index) => (
-                            <li key={index}>
-                                <a href={classData.link} target="_blank" rel="noopener noreferrer">
-                                    {classData.link}
-                                </a>
-                                <p>{classData.studentName}</p>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>No upcoming classes yet.</p>
-                )}
+                <TutorClassList upcomingClasses={upcomingClasses} handleRemoveClass={handleRemoveClass} />
             </div>
         </div>
     )
