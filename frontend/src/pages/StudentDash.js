@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import withAuth from "../withAuth";
 import { useNavigate, useParams } from "react-router-dom";
 import API_BASE_URL from "../config";
+import StudentClassList from "../components/StudentClassList";
 
 function StudentDash() {
     const navigate = useNavigate()
@@ -39,7 +40,7 @@ function StudentDash() {
                     const result = await response.json()
                     console.log('Full result\n', result)    // LOG
                     setStudentData(result.studentData)
-                    setUpcomingClasses(result.studentData.upcoming_classes)
+                    setUpcomingClasses(result.classes)
                 } else {
                     const result = await response.json()
                     setError(result.error || "Error fetching student dash")
@@ -62,23 +63,7 @@ function StudentDash() {
             )}
             <button onClick={handleLogout}>Logout</button>
             <h1>Welcome {studentData.first}!</h1>
-            <div className="classes-cont">
-                <h2>Upcoming classes</h2>
-                {upcomingClasses.length > 0 ? (
-                    <ul>
-                        {upcomingClasses.map((classData, index) => (
-                            <li key={index}>
-                                <a href={classData.link} target="_blank" rel="noopener noreferrer">
-                                    {classData.link}
-                                </a>
-                                <p>{classData.tutor_id}</p>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>No upcoming classes yet.</p>
-                )}
-            </div>
+            <StudentClassList upcomingClasses={upcomingClasses} />
         </div>
     )
 }

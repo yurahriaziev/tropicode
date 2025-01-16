@@ -510,15 +510,21 @@ def student_dash():
         
         student_ref = db.collection('students').document(data.get('studentId'))
         stud_data = student_ref.get().to_dict()
+        # getting student classes and their data
+        for id in stud_data.get('upcoming_classes', []):
+            class_ref = db.collection('classes').document(id)
+            class_data = class_ref.get().to_dict()
+            classes.append(class_data)
+
     except Exception as e:
         return jsonify({'message':f'SERVER - Error occured when fetching student dashboard: {str(e)}'}), 403
     
-    return jsonify({"message": "Welcome to the student dashboard!", 'studentData':stud_data})
+    return jsonify({"message": "Welcome to the student dashboard!", 'studentData':stud_data, 'classes':classes})
 
 @app.route("/server-test", methods=['POST', 'GET', 'OPTIONS'])
 def server_test():
     return jsonify({'message': 'Server OK'})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
-    # app.run(host='0.0.0.0', port=5001, debug=True) # for local
+    # app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True) # for local
