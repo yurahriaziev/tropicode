@@ -8,10 +8,10 @@ export default function Class({ index, classData}) {
         const updateJoinState = () => {
             const currentTime = new Date()
             const startTime = new Date(classData.start)
-            // console.log('currentTime', currentTime)
-            // console.log('startTime', startTime)
+            // console.log(currentTime)
+            // console.log(startTime)
             const timeDiff = startTime - currentTime
-            setJoinActive(timeDiff <= 5 * 60 * 1000 && timeDiff > 0)
+            setJoinActive((timeDiff <= 5 * 60 * 1000 && timeDiff > 0) || (currentTime > startTime))
         }
 
         updateJoinState()
@@ -46,7 +46,7 @@ export default function Class({ index, classData}) {
             </p>
             <p>{classData.studentName}</p>
             <p><strong>Start: </strong>{formatTimeToEST(classData.start)}<strong>End: </strong>{formatTimeToEST(classData.end)}</p>
-            <p><strong>ID: </strong>{classData.class_id}</p>
+            {/* <p><strong>ID: </strong>{classData.class_id}</p> */}
         </li>
     )
 }
