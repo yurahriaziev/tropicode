@@ -45,8 +45,8 @@ export default function Class({ index, classData}) {
                 </button>
             </p>
             <p>{classData.studentName}</p>
-            <p><strong>Start: </strong>{formatTimeToEST(classData.start)} | <strong>End: </strong>{formatTimeToEST(classData.end)}</p>
-            <p>{classData.class_id}</p>
+            <p><strong>Start: </strong>{formatTimeToEST(classData.start)}<strong>End: </strong>{formatTimeToEST(classData.end)}</p>
+            <p><strong>ID: </strong>{classData.class_id}</p>
         </li>
     )
 }
