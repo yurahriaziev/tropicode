@@ -224,8 +224,6 @@ def create_meeting():
         endTime = data.get('endTime')
         student_id = data.get('assignedStudentId')
 
-        start_est = format_time_to_est(startTime)
-        end_est = format_time_to_est(endTime)
         print(student_id)
         event = {
             'summary':summary,
@@ -266,10 +264,11 @@ def create_meeting():
 
             add_new_class(tutor_id, class_id)
 
-            new_class = {'link':meet_link, 'student_id':student_id, 'tutor_id':tutor_id, 'class_id':class_id, 'start':start_est, 'end':end_est, 'title':summary}
+            new_class = {'link':meet_link, 'student_id':student_id, 'tutor_id':tutor_id, 'class_id':class_id, 'start':startTime, 'end':endTime, 'title':summary}
 
             classes_ref = db.collection('classes')
             classes_ref.document(class_id).set(new_class)
+
             return jsonify({'message': 'Meeting created successfully', 'class':new_class})
         else:
             return jsonify({'error': 'Failed to create meeting', 'details': response.json()}), 400
@@ -372,6 +371,10 @@ def tutor_dash():
         for c_id in tutor_classes:
             class_ref = db.collection('classes').document(c_id)
             class_data = class_ref.get().to_dict()
+            start_est = format_time_to_est(class_data.get('start'))
+            end_est = format_time_to_est(class_data.get('end'))
+            class_data['start'] = start_est
+            class_data['end'] = end_est
             classes.append(class_data)
 
     except Exception as e:
