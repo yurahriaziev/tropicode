@@ -22,6 +22,10 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 ''' Helper funcs '''
+def parse_iso_time(iso_time):
+    if iso_time.endswith('Z'):
+        iso_time = iso_time.replace('Z', '+00:00')
+    return datetime.fromisoformat(iso_time)
 
 def generate_class_id(length):
     chars = string.ascii_letters + string.digits
@@ -59,8 +63,8 @@ def require_role(required_role):
 
 def get_class_status(start_time, end_time):
     current = datetime.now(dt_timezone.utc)
-    start = datetime.fromisoformat(start_time).replace(tzinfo=dt_timezone.utc)
-    end = datetime.fromisoformat(end_time).replace(tzinfo=dt_timezone.utc)
+    start = parse_iso_time(start_time)
+    end = parse_iso_time(end_time)
 
     if current < start:
         return 'UPCOMING'
