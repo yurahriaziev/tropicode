@@ -58,7 +58,7 @@ def require_role(required_role):
     return decorator
 
 def get_class_status(start_time, end_time):
-    current = datetime.fromisoformat(datetime.utcnow().isoformat()).replace(tzinfo=dt_timezone.utc)
+    current = datetime.now(dt_timezone.utc)
     start = datetime.fromisoformat(start_time).replace(tzinfo=dt_timezone.utc)
     end = datetime.fromisoformat(end_time).replace(tzinfo=dt_timezone.utc)
 
@@ -336,7 +336,7 @@ def process_login():
             "user_id": user_doc.id,
             "user_email": user_data.get('email'),
             "role": role,
-            "exp": datetime.utcnow() + timedelta(hours = 1)
+            "exp": datetime.now(dt_timezone.utc) + timedelta(hours = 1)
         }
         token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
         print(token)
@@ -544,5 +544,5 @@ def server_test():
     return jsonify({'message': 'Server OK'})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
-    # app.run(host='0.0.0.0', port=5001, debug=True) # for local
+    # app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True) # for local
