@@ -44,6 +44,12 @@ export default function Class({ index, classData}) {
                     )}
                 </button>
             </p>
+            <p
+                className="class-status"
+                style={{color: classData.status === 'LIVE' ? 'red' : 'black',fontWeight: classData.status === 'LIVE' ? 'bold' : 'normal'}}
+            >
+                {classData.status}
+            </p>
             <p>{classData.studentName}</p>
             <p><strong>Start: </strong>{formatTimeToEST(classData.start)}<strong>End: </strong>{formatTimeToEST(classData.end)}</p>
             {/* <p><strong>ID: </strong>{classData.class_id}</p> */}
