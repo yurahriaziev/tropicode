@@ -170,7 +170,7 @@ def google_callback():
         print_red("Warning: No refresh_token received. Reauthorization may be needed.")
 
     if 'expires_in' in token:
-        update_data['token_expiry'] = datetime.datetime.utcnow() + datetime.timedelta(seconds=token['expires_in'])
+        update_data['token_expiry'] = datetime.utcnow() + timedelta(seconds=token['expires_in'])
 
     tutor_ref.update(update_data)
     print(google_id)
