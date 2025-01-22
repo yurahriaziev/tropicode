@@ -358,6 +358,7 @@ def tutor_dash():
     students = []
     classes = []
     data = request.json
+    print(data)
     try:
         tutor_id = data.get('tutorId')
         if not tutor_id:
