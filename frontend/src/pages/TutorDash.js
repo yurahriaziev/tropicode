@@ -265,7 +265,7 @@ function TutorDash() {
                 <TutorStudentsList students={students} handleRemoveStudent={handleRemoveStudent} />
             </div>
             <div className="classes-cont">
-                <h2>Upcoming classes</h2>
+                <h2>Your classes</h2>
                 <TutorClassList upcomingClasses={upcomingClasses} handleRemoveClass={handleRemoveClass} />
             </div>
         </div>

@@ -8,6 +8,8 @@ export default function TutorClassList({ upcomingClasses, handleRemoveClass }) {
                         {upcomingClasses.map((classData, index) => (
                             <li key={index}>
                                 <p>{classData.title}</p>
+                                <p className="class-status" style={{color: classData.status === 'LIVE' ? 'red' : 'black',fontWeight: classData.status === 'LIVE' ? 'bold' : 'normal'}}
+                                    >{classData.status}</p>
                                 <a href={classData.link} target="_blank" rel="noopener noreferrer">
                                     {classData.link}
                                 </a>

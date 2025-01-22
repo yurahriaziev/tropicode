@@ -7,14 +7,13 @@ import requests
 import jwt
 import os
 from dotenv import load_dotenv
-import datetime
-from datetime import timezone
+from datetime import datetime, timedelta, timezone as dt_timezone
 import json
 import uuid
 from urllib.parse import urlencode
 import string
 import secrets
-from pytz import timezone
+from pytz import timezone as pytz_timezone
 from dateutil.parser import parse
 
 from authlib.integrations.flask_client import OAuth
@@ -22,13 +21,15 @@ from authlib.integrations.flask_client import OAuth
 import logging
 logging.basicConfig(level=logging.INFO)
 
+''' Helper funcs '''
+
 def generate_class_id(length):
     chars = string.ascii_letters + string.digits
     return ''.join(secrets.choice(chars) for _ in range(length))
 
 def format_time_to_est(iso_time):
     utc_time = parse(iso_time)
-    est = timezone('America/New_York')
+    est = pytz_timezone('America/New_York')
     est_time = utc_time.astimezone(est)
     return est_time.strftime('%I:%M%p')
 
@@ -55,6 +56,18 @@ def require_role(required_role):
                 return jsonify({'message': 'Invalid token'}), 403
         return decorated_function
     return decorator
+
+def get_class_status(start_time, end_time):
+    current = datetime.fromisoformat(datetime.utcnow().isoformat()).replace(tzinfo=dt_timezone.utc)
+    start = datetime.fromisoformat(start_time).replace(tzinfo=dt_timezone.utc)
+    end = datetime.fromisoformat(end_time).replace(tzinfo=dt_timezone.utc)
+
+    if current < start:
+        return 'UPCOMING'
+    elif start <= current <= end:
+        return 'LIVE'
+    else:
+        return 'FINISHED'
 
 load_dotenv()
 SECRET_KEY = os.getenv('SECRET_KEY')
@@ -104,7 +117,7 @@ def refresh_access_token(refresh_token):
 def is_token_expired(token_expiry):
     if not token_expiry:
         return True
-    now = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+    now = datetime.utcnow().replace(tzinfo=dt_timezone.utc)
     return token_expiry < now
 
 @app.route('/google/login', methods=['GET'])
@@ -206,7 +219,7 @@ def create_meeting():
                 print_red('Need to refresh token')
                 refreshed_token_data = refresh_access_token(refresh_token)
                 access_token = refreshed_token_data['access_token']
-                new_expiry = datetime.datetime.utcnow() + datetime.timedelta(seconds=refreshed_token_data['expires_in'])
+                new_expiry = datetime.utcnow() + timedelta(seconds=refreshed_token_data['expires_in'])
                 tutor_ref.update({
                     'google_access_token': access_token,
                     'token_expiry': new_expiry
@@ -264,7 +277,7 @@ def create_meeting():
 
             add_new_class(tutor_id, class_id)
 
-            new_class = {'link':meet_link, 'student_id':student_id, 'tutor_id':tutor_id, 'class_id':class_id, 'start':startTime, 'end':endTime, 'title':summary}
+            new_class = {'link':meet_link, 'student_id':student_id, 'tutor_id':tutor_id, 'class_id':class_id, 'start':startTime, 'end':endTime, 'title':summary, 'status':get_class_status(startTime, endTime)}
 
             classes_ref = db.collection('classes')
             classes_ref.document(class_id).set(new_class)
@@ -323,7 +336,7 @@ def process_login():
             "user_id": user_doc.id,
             "user_email": user_data.get('email'),
             "role": role,
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours = 1)
+            "exp": datetime.utcnow() + timedelta(hours = 1)
         }
         token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
         print(token)
@@ -371,6 +384,7 @@ def tutor_dash():
         for c_id in tutor_classes:
             class_ref = db.collection('classes').document(c_id)
             class_data = class_ref.get().to_dict()
+            class_data['status'] = get_class_status(class_data.get('start'), class_data.get('end'))
             start_est = format_time_to_est(class_data.get('start'))
             end_est = format_time_to_est(class_data.get('end'))
             class_data['start'] = start_est
