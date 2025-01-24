@@ -11,14 +11,16 @@ export default function Class({ index, classData}) {
             // console.log(currentTime)
             // console.log(startTime)
             const timeDiff = startTime - currentTime
-            setJoinActive((timeDiff <= 5 * 60 * 1000 && timeDiff > 0) || (currentTime > startTime))
+            if (classData.status !== 'FINISHED') {
+                setJoinActive((timeDiff <= 5 * 60 * 1000 && timeDiff > 0) || (currentTime > startTime))
+            }
         }
 
         updateJoinState()
         const interval = setInterval(updateJoinState, 1000)
 
         return () => clearInterval(interval)
-    }, [classData.start])
+    }, [classData])
 
     function formatTimeToEST(time) {
         const utcTime = DateTime.fromISO(time, {zone: "utc"})

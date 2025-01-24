@@ -18,6 +18,8 @@ from dateutil.parser import parse
 
 from authlib.integrations.flask_client import OAuth
 
+from apscheduler.schedulers.background import BackgroundScheduler
+
 import logging
 logging.basicConfig(level=logging.INFO)
 
@@ -60,6 +62,24 @@ def require_role(required_role):
                 return jsonify({'message': 'Invalid token'}), 403
         return decorated_function
     return decorator
+
+def update_class_status():
+    try:
+        classes_ref = db.collection('classes').where('status', '!=', 'finished')
+        classes = classes_ref.get()
+        for class_doc in classes:
+            class_data = class_doc.to_dict()
+            end_time = class_data.get('end')
+            if not end_time:
+                continue
+            end = datetime.fromisoformat(end_time)
+            current_time = datetime.now(dt_timezone.utc)
+
+            if current_time > end and class_data.get('status') != 'FINISHED':
+                class_doc.reference.update({'status':'FINISHED'})
+                print(f'Class {class_doc.id} status updated to FINISHED')
+    except Exception as e:
+        print(f"Error updating class status: {e}")
 
 def get_class_status(start_time, end_time):
     current = datetime.now(dt_timezone.utc)
@@ -340,7 +360,7 @@ def process_login():
             "user_id": user_doc.id,
             "user_email": user_data.get('email'),
             "role": role,
-            "exp": datetime.now(dt_timezone.utc) + timedelta(hours = 1)
+            "exp": datetime.now(dt_timezone.utc) + timedelta(hours = 3)
         }
         token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
         print(token)
@@ -547,6 +567,13 @@ def student_dash():
 def server_test():
     return jsonify({'message': 'Server OK'})
 
+scheduler = BackgroundScheduler()
+scheduler.add_job(update_class_status, 'interval', minutes=10)
+scheduler.start()
+
 if __name__ == '__main__':
-    # app.run(host='0.0.0.0', port=5000, debug=True)
-    app.run(host='0.0.0.0', port=5001, debug=True) # for local
+    try:
+        # app.run(host='0.0.0.0', port=5000, debug=True)
+        app.run(host='0.0.0.0', port=5001, debug=True) # for local
+    finally:
+        scheduler.shutdown()
