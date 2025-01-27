@@ -10,6 +10,11 @@ function StudentDash() {
     const { studentId } = useParams()
     const [error, setError] = useState('')
     const [upcomingClasses, setUpcomingClasses] = useState([])
+    const [currentTab, setCurrentTab] = useState('classes')
+
+    const handleTabSwitch = (tab) => {
+        setCurrentTab(tab)
+    }
 
     const handleLogout = () => {
         navigate('/')
@@ -63,7 +68,16 @@ function StudentDash() {
             )}
             <button onClick={handleLogout}>Logout</button>
             <h1>Welcome {studentData.first}!</h1>
-            <StudentClassList upcomingClasses={upcomingClasses} />
+            {currentTab === 'classes' ? (
+                <>
+                    <h2>Your classes<button onClick={() => handleTabSwitch('homework')}>Homework</button></h2>
+                    <StudentClassList upcomingClasses={upcomingClasses} />
+                </>
+            ) : (
+                <>
+                    <h2>Your homework<button onClick={() => handleTabSwitch('classes')}>Classes</button></h2>
+                </>
+            )}
         </div>
     )
 }

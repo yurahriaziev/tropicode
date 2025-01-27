@@ -25,6 +25,7 @@ function TutorDash() {
         setAddStudentForm(open)
         if (open) setSuccess('')
     }
+
     const handleNewClassClick = async(open) => {
         try {
             const token = localStorage.getItem("token")
@@ -216,6 +217,29 @@ function TutorDash() {
         }
     }
 
+    const handleAddHomework = async(studId, homework) => {
+        try {
+            // const response = await fetch(`${API_BASE_URL}/add-homework`, {
+            //     method:'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //         'Authorization': `Bearer ${localStorage.getItem('token')}`
+            //     },
+            //     body: JSON.stringify({ stud_id })
+            // })
+
+            // if (response.ok) {
+            //     const result = await response.json()
+            // }
+            console.log(studId)
+            console.log(tutorId)
+            console.log(homework)
+        } catch (error) {
+            console.error('Error:', error)  // LOG
+            setError(`An error occurred while adding new homework to ${studId}`)
+        }
+    }
+
     return (
         <div className="tutor-cont">
             {error && (
@@ -255,14 +279,14 @@ function TutorDash() {
                 <NewClassForm handleNewClassClick={handleNewClassClick} setError={setError}
                 createNewMeeting={createNewMeeting} students={students} />
             )}
-            {/* <div className="tutor-data-cont">
-                {tutorData && (
-                    <h3>{tutorData.email}</h3>
-                )}
-            </div> */}
             <div className="students-cont">
                 <h2>Your students</h2>
-                <TutorStudentsList students={students} handleRemoveStudent={handleRemoveStudent} />
+                <TutorStudentsList students={students}
+                                    handleRemoveStudent={handleRemoveStudent}
+                                    handleAddHomework={handleAddHomework}
+                                    setError={setError}
+                                    setSuccess={setSuccess}
+                />
             </div>
             <div className="classes-cont">
                 <h2>Your classes</h2>

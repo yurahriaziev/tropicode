@@ -563,6 +563,11 @@ def student_dash():
     
     return jsonify({"message": "Welcome to the student dashboard!", 'studentData':stud_data, 'classes':classes})
 
+@app.route('/add-homework', methods=['POST'])
+@require_role('tutor')
+def add_homework():
+    pass
+
 @app.route("/server-test", methods=['POST', 'GET', 'OPTIONS'])
 def server_test():
     return jsonify({'message': 'Server OK'})

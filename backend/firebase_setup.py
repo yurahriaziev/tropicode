@@ -126,35 +126,7 @@ def remove_class_db(tutor_id, student_id, class_id):
         return 'Class succeessfully removed'
     except Exception as e:
         return f'Error in remove_class_db - {str(e)}'
-
-# def remove_class_db(tutor_id, student_id, class_id):
-#     try:
-#         tutor_ref = db.collection('tutors').document(tutor_id)
-#         student_ref = db.collection('students').document(student_id)
-#         classes_ref = db.collection('classes').document(class_id)
-#         if not classes_ref.get().exists:
-#             return 'Class does not exist in classes'
-        
-#         classes_ref.delete()
-
-#         tutor_doc = tutor_ref.get()
-#         student_doc = student_ref.get()
-#         if not tutor_doc.exists or not student_doc.exists:
-#             return "Tutor or Student not found"
-        
-#         tutor_data = tutor_doc.to_dict()
-#         tutor_classes = tutor_data.get('upcoming_classes', [])
-
-#         t_updated_classes = [cls for cls in tutor_classes if cls.get('id') != class_id]
-#         tutor_ref.update({'upcoming_classes':t_updated_classes})
-
-#         stud_data = student_doc.to_dict()
-#         stud_classes = stud_data.get('upcoming_classes', [])
-
-#         s_updated_classes = [cls for cls in stud_classes if cls.get('id') != class_id]
-#         student_ref.update({'upcoming_classes':s_updated_classes})
-
-#         return {'message':'Class removed successfullly', 'classes':}
-
-    except Exception as e:
-        return f'{RED}SERVER - Error adding new class {str(e)}{RESET}'
+    
+def add_new_homework(stud_id, tutor_id, new_hw):
+    # new_hw = hw_id:{stud_id, title, desc, status, screenshot, tutor_id, due_date(iso)}
+    pass

@@ -1,9 +1,17 @@
-import React from "react";
+import React, {useState} from "react";
+import NewHomeworkForm from "./NewHomeworkForm";
 
-export default function TutorStudentsList({ students, handleRemoveStudent }) {
+export default function TutorStudentsList({ students, handleRemoveStudent, handleAddHomework, setError, setSuccess }) {
+    const [addHomeworkForm, setAddHomeworkForm] = useState(false)
+    const [currectStudentHWID, setCurrentStudentHWID] = useState('')
+
+    const handleAddHomeworkClick = (open, id) => {
+        setAddHomeworkForm(open)
+        setCurrentStudentHWID(id)
+    }
     return (
         <>
-            <table border="1" style={{ width: "80%", textAlign: "left", borderCollapse: "collapse" }}>
+            <table border="2" style={{ width: "50%", textAlign: "left", borderCollapse: "collapse" }}>
                 <thead>
                     <tr>
                         <th>First Name</th>
@@ -19,7 +27,10 @@ export default function TutorStudentsList({ students, handleRemoveStudent }) {
                                     <td>{student.first}</td>
                                     <td>{student.last}</td>
                                     <td>{student.age}</td>
-                                    <td><button onClick={() => handleRemoveStudent(student.id)}>Remove</button></td>
+                                    <td>
+                                        <button onClick={() => handleRemoveStudent(student.id)}>Remove</button>
+                                        <button onClick={() => handleAddHomeworkClick(true, student.id)}>Add Homework</button>
+                                    </td>
                                 </tr>
                             ))
                        ) : (
@@ -31,6 +42,17 @@ export default function TutorStudentsList({ students, handleRemoveStudent }) {
                        )}
                 </tbody>
             </table>
+            {addHomeworkForm && (
+                <div className="add-homework-form">
+                    <NewHomeworkForm
+                        handleAddHomeworkClick={handleAddHomeworkClick}
+                        handleAddHomework={handleAddHomework}
+                        setError={setError}
+                        setSuccess={setSuccess}
+                        studId={currectStudentHWID}
+                    />
+                </div>
+            )}
         </>
     )
 }
