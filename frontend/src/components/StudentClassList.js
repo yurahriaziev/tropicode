@@ -7,7 +7,7 @@ export default function StudentClassList({ upcomingClasses }) {
             {upcomingClasses.length > 0 ? (
                 <ul>
                     {upcomingClasses.map((classData, index) => (
-                        <Class key={index} index={index} classData={classData} />
+                        <Class key={index} index={index} classData={classData} view='student'/>
                     ))}
                 </ul>
             ) : (

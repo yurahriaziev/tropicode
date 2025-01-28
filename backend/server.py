@@ -25,19 +25,24 @@ logging.basicConfig(level=logging.INFO)
 
 ''' Helper funcs '''
 def parse_iso_time(iso_time):
-    if iso_time.endswith('Z'):
-        iso_time = iso_time.replace('Z', '+00:00')
-    return datetime.fromisoformat(iso_time)
+    return datetime.fromisoformat(iso_time.replace("Z", "+00:00")).astimezone(dt_timezone.utc)
+
 
 def generate_class_id(length):
     chars = string.ascii_letters + string.digits
     return ''.join(secrets.choice(chars) for _ in range(length))
 
 def format_time_to_est(iso_time):
+    mil_time = parse(iso_time)
+    # est = pytz_timezone('America/New_York')
+    # est_time = utc_time.astimezone(est)
+    return mil_time.strftime('%I:%M %p')
+
+def extract_est_date_only(iso_time):
     utc_time = parse(iso_time)
     est = pytz_timezone('America/New_York')
     est_time = utc_time.astimezone(est)
-    return est_time.strftime('%I:%M%p')
+    return est_time.strftime('%Y-%m-%d')
 
 def require_role(required_role):
     def decorator(f):
@@ -67,17 +72,28 @@ def update_class_status():
     try:
         classes_ref = db.collection('classes').where('status', '!=', 'finished')
         classes = classes_ref.get()
+        current_time = datetime.now(dt_timezone.utc)
+
         for class_doc in classes:
             class_data = class_doc.to_dict()
+            start_time = class_data.get('start')
             end_time = class_data.get('end')
-            if not end_time:
-                continue
-            end = datetime.fromisoformat(end_time)
-            current_time = datetime.now(dt_timezone.utc)
 
-            if current_time > end and class_data.get('status') != 'FINISHED':
-                class_doc.reference.update({'status':'FINISHED'})
-                print(f'Class {class_doc.id} status updated to FINISHED')
+            if not end_time or not start_time:
+                continue
+
+            start = datetime.fromisoformat(start_time)
+            end = datetime.fromisoformat(end_time)
+
+            if current_time < start and class_data.get('status') != 'UPCOMING':
+                class_doc.reference.update({'status': 'UPCOMING'})
+                print(f"Class {class_doc.id} status updated to UPCOMING")
+            elif start <= current_time <= end and class_data.get('status') != 'LIVE':
+                class_doc.reference.update({'status': 'LIVE'})
+                print(f"Class {class_doc.id} status updated to LIVE")
+            elif current_time > end and class_data.get('status') != 'FINISHED':
+                class_doc.reference.update({'status': 'FINISHED'})
+                print(f"Class {class_doc.id} status updated to FINISHED")
     except Exception as e:
         print(f"Error updating class status: {e}")
 
@@ -410,10 +426,16 @@ def tutor_dash():
             class_ref = db.collection('classes').document(c_id)
             class_data = class_ref.get().to_dict()
             class_data['status'] = get_class_status(class_data.get('start'), class_data.get('end'))
-            start_est = format_time_to_est(class_data.get('start'))
-            end_est = format_time_to_est(class_data.get('end'))
-            class_data['start'] = start_est
-            class_data['end'] = end_est
+
+            start_date = class_data.get('start').split('T')[0]
+            end_date = class_data.get('end').split('T')[0]
+            start_time = format_time_to_est(class_data.get('start'))
+            end_time = format_time_to_est(class_data.get('end'))
+
+            class_data['startDate'] = start_date
+            class_data['endDate'] = end_date
+            class_data['startTime'] = start_time
+            class_data['endTime'] = end_time
             classes.append(class_data)
 
     except Exception as e:
@@ -556,6 +578,7 @@ def student_dash():
         for id in stud_data.get('upcoming_classes', []):
             class_ref = db.collection('classes').document(id)
             class_data = class_ref.get().to_dict()
+            class_data['status'] = get_class_status(class_data.get('start'), class_data.get('end'))
             classes.append(class_data)
 
     except Exception as e:
@@ -573,7 +596,7 @@ def server_test():
     return jsonify({'message': 'Server OK'})
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(update_class_status, 'interval', minutes=10)
+scheduler.add_job(update_class_status, 'interval', minutes=1)
 scheduler.start()
 
 if __name__ == '__main__':

@@ -6,7 +6,6 @@ import TutorStudentsList from "../components/TutorStudentsList";
 import NewClassForm from "../components/NewClassForm";
 import API_BASE_URL from "../config";
 import TutorClassList from "../components/TutorClassList";
-import { DateTime } from "luxon";
 
 function TutorDash() {
     const { tutorId } = useParams()
@@ -60,12 +59,6 @@ function TutorDash() {
         localStorage.removeItem('token')
         localStorage.removeItem('role')
         localStorage.removeItem('token_expiry')
-    }
-
-    function formatTimeToEST(time) {
-        const utcTime = DateTime.fromISO(time, {zone: "utc"})
-        const estTime = utcTime.setZone("America/New_York")
-        return estTime.toFormat("hh:mma")
     }
 
     useEffect(() => {
@@ -185,6 +178,15 @@ function TutorDash() {
         }
     }
 
+    const displayStandardTime = (iso) => {
+        const date = new Date(iso)
+        let hours = date.getUTCHours()
+        const minutes = date.getUTCMinutes().toString().padStart(2, "0")
+        const suffix = hours >= 12 ? "PM" : "AM"
+        hours = hours % 12 || 12
+        return `${hours}:${minutes} ${suffix}`
+    }
+
     const createNewMeeting = async( summary, startTime, endTime, assignedStudentId ) => {
         try {
             const response = await fetch(`${API_BASE_URL}/create-meeting`, {
@@ -198,10 +200,13 @@ function TutorDash() {
 
             if (response.ok) {
                 const result = await response.json()
-                const startEst = formatTimeToEST(result.class.start)
-                const endEst = formatTimeToEST(result.class.end)
-                result.class.start = startEst
-                result.class.end = endEst
+
+                result.class.startDate = result.class.start.split('T')[0]
+                result.class.endDate = result.class.end.split('T')[0]
+
+                result.class.startTime = displayStandardTime(result.class.start)
+                result.class.endTime = displayStandardTime(result.class.end)
+                console.log(result)
                 setUpcomingClasses((prevClasses => [...prevClasses, result.class]))
                 handleNewClassClick(false)
                 setSuccess('Class created successfully!')

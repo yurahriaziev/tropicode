@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 export default function NewClassForm({ handleNewClassClick, setError, createNewMeeting, students }) {
     const [title, setTitle] = useState('')
+    const [date, setDate] = useState('')
     const [startTime, setStartTime] = useState("")
     const [endTime, setEndTime] = useState("")
     const [assignedStudent, setAssignedStudent] = useState("")
@@ -18,11 +19,14 @@ export default function NewClassForm({ handleNewClassClick, setError, createNewM
     }
 
     const formatTimeToISO = (time) => {
-        const date = new Date()
+        const utcDate = new Date(date)
         const [hours, minutes] = time.split(":")
-        date.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0)
-        return date.toISOString()
+        utcDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0)
+        utcDate.setDate(utcDate.getDate() + 1)
+        return utcDate.toISOString()
     }
+
+    
 
     const handleSubmit = async(e) => {
         e.preventDefault()
@@ -37,26 +41,24 @@ export default function NewClassForm({ handleNewClassClick, setError, createNewM
         }
 
         try {
-            const fStart = formatTimeToISO(startTime)
-            const fEnd = formatTimeToISO(endTime)
-
-            createNewMeeting(title, fStart, fEnd, assignedStudent)
+            createNewMeeting(title, formatTimeToISO(startTime), formatTimeToISO(endTime), assignedStudent)
         } catch (err) {
             setError("An error occurred while creating the meeting.");
         }
     }
 
+    // for debugging
     const startTimeOptions = []
-    for (let hour = 15; hour <= 18; hour++) {
-        for (let min = 0; min < 60; min+=15) {
+    for (let hour = 13; hour <= 18; hour++) {
+        for (let min = 0; min < 60; min+=1) {
             if (hour === 18 && min > 0) break
             const formatedTime = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`
             startTimeOptions.push(formatedTime)
         }
     }
     const endTimeOptions = []
-    for (let hour = 16; hour <= 19; hour++) {
-        for (let min = 0; min < 60; min+=15) {
+    for (let hour = 14; hour <= 19; hour++) {
+        for (let min = 0; min < 60; min+=1) {
             if (hour === 19 && min > 0) break
             const formatedTime = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`
             endTimeOptions.push(formatedTime)
@@ -86,6 +88,16 @@ export default function NewClassForm({ handleNewClassClick, setError, createNewM
                         required={true}
                         onChange={(e) => setTitle(e.target.value)}
                     />
+                    <div>
+                        <label htmlFor="due-date-picker">Date:</label>
+                        <input
+                            type="date"
+                            id="due-date-picker"
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
+                            required
+                        />
+                    </div>
                     <div>
                         <label htmlFor="start-time-picker">Start Time:</label>
                         <select
