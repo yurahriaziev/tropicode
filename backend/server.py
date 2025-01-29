@@ -98,9 +98,15 @@ def update_class_status():
         print(f"Error updating class status: {e}")
 
 def get_class_status(start_time, end_time):
-    current = datetime.now(dt_timezone.utc)
-    start = parse_iso_time(start_time)
-    end = parse_iso_time(end_time)
+    current = datetime.now().replace(tzinfo=dt_timezone.utc)
+    start = datetime.fromisoformat(start_time).astimezone(dt_timezone.utc)
+    end = datetime.fromisoformat(end_time).astimezone(dt_timezone.utc)
+
+    print()
+    print('CURRENT', current)
+    print('START', start)
+    print('END', end)
+    print()
 
     if current < start:
         return 'UPCOMING'
@@ -273,8 +279,10 @@ def create_meeting():
         }
 
         summary = data.get('summary')
+        
         startTime = data.get('startTime')
         endTime = data.get('endTime')
+
         student_id = data.get('assignedStudentId')
 
         print(student_id)
@@ -282,11 +290,11 @@ def create_meeting():
             'summary':summary,
             'start': {
                 'dateTime': startTime,
-                'timeZone': 'America/New_York',
+                'timeZone': 'UTC',
             },
             'end': {
                 'dateTime': endTime,
-                'timeZone': 'America/New_York',
+                'timeZone': 'UTC',
             },
             'conferenceData': {
                 'createRequest': {
@@ -314,10 +322,9 @@ def create_meeting():
                 'upcoming_classes':firestore.ArrayUnion([class_id])
             })
             
-
             add_new_class(tutor_id, class_id)
 
-            new_class = {'link':meet_link, 'student_id':student_id, 'tutor_id':tutor_id, 'class_id':class_id, 'start':startTime, 'end':endTime, 'title':summary, 'status':get_class_status(startTime, endTime)}
+            new_class = {'link':meet_link, 'student_id':student_id, 'tutor_id':tutor_id, 'class_id':class_id, 'start':startTime, 'end':endTime, 'title':summary}
 
             classes_ref = db.collection('classes')
             classes_ref.document(class_id).set(new_class)
@@ -427,19 +434,12 @@ def tutor_dash():
             class_ref = db.collection('classes').document(c_id)
             class_data = class_ref.get().to_dict()
             class_data['status'] = get_class_status(class_data.get('start'), class_data.get('end'))
+            
+            print(class_data)
 
-            start_date = class_data.get('start').split('T')[0]
-            end_date = class_data.get('end').split('T')[0]
-            start_time = format_time_to_est(class_data.get('start'))
-            end_time = format_time_to_est(class_data.get('end'))
-
-            class_data['startDate'] = start_date
-            class_data['endDate'] = end_date
-            class_data['startTime'] = start_time
-            class_data['endTime'] = end_time
             classes.append(class_data)
 
-        homework_ids= tutor_data.get('assigned_homework')
+        homework_ids= tutor_data.get('assigned_homework', [])
         for h_id in homework_ids:
             h_ref = db.collection('homework').document(h_id)
             h_data = h_ref.get().to_dict()

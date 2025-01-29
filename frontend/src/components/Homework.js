@@ -15,7 +15,7 @@ export default function Homework({ index, homeworkData, view }) {
                 <div key={index}>
                     <p>Title</p>
                     <h3>{homeworkData.title}</h3>
-                    <p>Due: {formatTimeToEST(homeworkData.dueDate)}</p>
+                    <p>Due: {formatTimeToEST(homeworkData.dueDate)} {homeworkData.dueDate.split('T')[0]}</p>
                 </div>
             ) : (
                 <>

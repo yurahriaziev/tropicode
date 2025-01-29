@@ -18,15 +18,11 @@ export default function NewClassForm({ handleNewClassClick, setError, createNewM
         setAssignedStudent(e.target.value)
     }
 
-    const formatTimeToISO = (time) => {
-        const utcDate = new Date(date)
-        const [hours, minutes] = time.split(":")
-        utcDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0)
-        utcDate.setDate(utcDate.getDate() + 1)
-        return utcDate.toISOString()
+    const formatToUTC = (date, time) => {
+        const estDate = new Date(`${date}T${time}:00-05:00`)
+        const utcDateString = estDate.toISOString()
+        return utcDateString
     }
-
-    
 
     const handleSubmit = async(e) => {
         e.preventDefault()
@@ -39,27 +35,42 @@ export default function NewClassForm({ handleNewClassClick, setError, createNewM
             setError('Start and end must differ')
             return
         }
+        
+        // log startTIme and endTime
+        // FIXME:
+        // startUTC an endUTC
+        // log everything
 
         try {
-            createNewMeeting(title, formatTimeToISO(startTime), formatTimeToISO(endTime), assignedStudent)
+            // call the function createNewMeeting here
+            // console.log('date', date)
+            // console.log('startTime', startTime)
+            // console.log('endTime', endTime)
+
+            const utcStartDate = formatToUTC(date, startTime)
+            const utcEndDate = formatToUTC(date, endTime)
+            // console.log('UTC Start Date', utcStartDate)
+            // console.log('UTC End Date', utcEndDate)
+
+            await createNewMeeting(title, utcStartDate, utcEndDate, assignedStudent)
         } catch (err) {
-            setError("An error occurred while creating the meeting.");
+            setError(`An error occurred while creating the meeting. ${err}`);
         }
     }
 
     // for debugging
     const startTimeOptions = []
-    for (let hour = 13; hour <= 18; hour++) {
+    for (let hour = 9; hour <= 10; hour++) {
         for (let min = 0; min < 60; min+=1) {
-            if (hour === 18 && min > 0) break
+            if (hour === 10 && min > 0) break
             const formatedTime = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`
             startTimeOptions.push(formatedTime)
         }
     }
     const endTimeOptions = []
-    for (let hour = 14; hour <= 19; hour++) {
+    for (let hour = 9; hour <= 10; hour++) {
         for (let min = 0; min < 60; min+=1) {
-            if (hour === 19 && min > 0) break
+            if (hour === 10 && min > 0) break
             const formatedTime = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`
             endTimeOptions.push(formatedTime)
         }

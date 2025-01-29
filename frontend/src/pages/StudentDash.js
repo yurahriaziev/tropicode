@@ -11,6 +11,7 @@ function StudentDash() {
     const [error, setError] = useState('')
     const [upcomingClasses, setUpcomingClasses] = useState([])
     const [currentTab, setCurrentTab] = useState('classes')
+    const [assignedHomework, setAssignedHomework] = useState([])
 
     const handleTabSwitch = (tab) => {
         setCurrentTab(tab)

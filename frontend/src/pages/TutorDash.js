@@ -107,6 +107,7 @@ function TutorDash() {
                     setStudents(result.students)
                     setUpcomingClasses(result.upcomingClasses)
                     // fetch assigned homework here
+                    console.log(result.assignedHomework)
                     setAssignedHomework(result.assignedHomework)
                     console.log(result.upcomingClasses)
                 } else {
@@ -187,15 +188,6 @@ function TutorDash() {
         }
     }
 
-    const displayStandardTime = (iso) => {
-        const date = new Date(iso)
-        let hours = date.getUTCHours()
-        const minutes = date.getUTCMinutes().toString().padStart(2, "0")
-        const suffix = hours >= 12 ? "PM" : "AM"
-        hours = hours % 12 || 12
-        return `${hours}:${minutes} ${suffix}`
-    }
-
     const createNewMeeting = async( summary, startTime, endTime, assignedStudentId ) => {
         try {
             const response = await fetch(`${API_BASE_URL}/create-meeting`, {
@@ -210,12 +202,8 @@ function TutorDash() {
             if (response.ok) {
                 const result = await response.json()
 
-                result.class.startDate = result.class.start.split('T')[0]
-                result.class.endDate = result.class.end.split('T')[0]
-
-                result.class.startTime = displayStandardTime(result.class.start)
-                result.class.endTime = displayStandardTime(result.class.end)
                 console.log(result)
+
                 setUpcomingClasses((prevClasses => [...prevClasses, result.class]))
                 handleNewClassClick(false)
                 setSuccess('Class created successfully!')
