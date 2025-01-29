@@ -35,22 +35,10 @@ export default function NewClassForm({ handleNewClassClick, setError, createNewM
             setError('Start and end must differ')
             return
         }
-        
-        // log startTIme and endTime
-        // FIXME:
-        // startUTC an endUTC
-        // log everything
 
         try {
-            // call the function createNewMeeting here
-            // console.log('date', date)
-            // console.log('startTime', startTime)
-            // console.log('endTime', endTime)
-
             const utcStartDate = formatToUTC(date, startTime)
             const utcEndDate = formatToUTC(date, endTime)
-            // console.log('UTC Start Date', utcStartDate)
-            // console.log('UTC End Date', utcEndDate)
 
             await createNewMeeting(title, utcStartDate, utcEndDate, assignedStudent)
         } catch (err) {
@@ -60,17 +48,17 @@ export default function NewClassForm({ handleNewClassClick, setError, createNewM
 
     // for debugging
     const startTimeOptions = []
-    for (let hour = 11; hour <= 12; hour++) {
+    for (let hour = 16; hour <= 18; hour++) {
         for (let min = 0; min < 60; min+=1) {
-            if (hour === 12 && min > 0) break
+            if (hour === 18 && min > 0) break
             const formatedTime = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`
             startTimeOptions.push(formatedTime)
         }
     }
     const endTimeOptions = []
-    for (let hour = 11; hour <= 12; hour++) {
+    for (let hour = 17; hour <= 19; hour++) {
         for (let min = 0; min < 60; min+=1) {
-            if (hour === 12 && min > 0) break
+            if (hour === 19 && min > 0) break
             const formatedTime = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`
             endTimeOptions.push(formatedTime)
         }

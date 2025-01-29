@@ -47,6 +47,7 @@ function StudentDash() {
                     console.log('Full result\n', result)    // LOG
                     setStudentData(result.studentData)
                     setUpcomingClasses(result.classes)
+                    
                 } else {
                     const result = await response.json()
                     setError(result.error || "Error fetching student dash")

@@ -5,7 +5,6 @@ export default function Class({ index, classData, view, handleRemoveClass}) {
     const [status, setStatus] = useState(classData.status)
 
     useEffect(() => {
-        console.log(classData.status)
         const updateJoinState = () => {
             const currentUTCTime = new Date()
             const utcStartDate = new Date(classData.start)
@@ -34,7 +33,7 @@ export default function Class({ index, classData, view, handleRemoveClass}) {
         return () => clearInterval(interval)
     }, [classData])
 
-    function formatTimeToEST(utcTimeString) { // GETS FULL FORMATED DATE
+    function formatTimeToEST(utcTimeString) { 
         const utcDate = new Date(utcTimeString)
         const utcToEstDate = utcDate.toLocaleString('en-US', {timeZone: 'America/New_York'})
         return utcToEstDate
