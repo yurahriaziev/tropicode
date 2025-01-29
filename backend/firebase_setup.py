@@ -5,6 +5,7 @@ import random
 import string
 import os
 from dotenv import load_dotenv
+import secrets
 
 YELLOW = "\033[93m"
 BLUE = "\033[94m"
@@ -19,6 +20,10 @@ cred = credentials.Certificate(FIREBASE_PATH)
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
+
+def generate_id(length):
+    chars = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(chars) for _ in range(length))
 
 def generate_user_code():
     chars = string.ascii_uppercase + string.digits
@@ -127,6 +132,10 @@ def remove_class_db(tutor_id, student_id, class_id):
     except Exception as e:
         return f'Error in remove_class_db - {str(e)}'
     
-def add_new_homework(stud_id, tutor_id, new_hw):
-    # new_hw = hw_id:{stud_id, title, desc, status, screenshot, tutor_id, due_date(iso)}
-    pass
+def add_new_homework(homework):
+    try:
+        homework_ref = db.collection('homework')
+        homework_ref.document(generate_id(20)).set(homework)
+        return f'Homework assigned successfully!'
+    except Exception as e:
+        return f'Error occured in add_new_homework - {str(e)}'

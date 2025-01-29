@@ -1,6 +1,6 @@
 from config import app, production_url
 from flask import jsonify, request, session, redirect, url_for
-from firebase_setup import firestore, db, auth, add_tutor, remove_user, add_student, add_new_class, remove_class_db
+from firebase_setup import firestore, db, auth, add_tutor, remove_user, add_student, add_new_class, remove_class_db, add_new_homework
 from functools import wraps
 import requests
 
@@ -589,7 +589,21 @@ def student_dash():
 @app.route('/add-homework', methods=['POST'])
 @require_role('tutor')
 def add_homework():
-    pass
+    try:
+        data = request.json
+        if data and data.get('homework'):
+            homework = data.get('homework')
+            homework['tutorId'] = data.get('tutorId')
+            print()
+            print(data.get('homework'))
+            print()
+            message = add_new_homework(homework)
+            return jsonify({'message':message, 'newHomework':data.get('homework')}), 200
+        else:
+            return jsonify({'error':'Missing data or incorrect data'}), 400
+    except Exception as e:
+        return jsonify({'error':f'SERVER - Error occurerd when adding new homework: {str(e)}'}), 500
+
 
 @app.route("/server-test", methods=['POST', 'GET', 'OPTIONS'])
 def server_test():

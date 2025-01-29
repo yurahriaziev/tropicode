@@ -23,6 +23,7 @@ export default function NewHomeworkForm({ handleAddHomeworkClick, handleAddHomew
         const date = new Date(dueDate)
         const [hours, minutes] = time.split(":")
         date.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0)
+        date.setDate(date.getDate() + 1)
         return date.toISOString()
     }
 

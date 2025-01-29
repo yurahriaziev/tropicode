@@ -238,14 +238,13 @@ function TutorDash() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
-                body: JSON.stringify({ studId, homework:homework })
+                body: JSON.stringify({ studId, tutorId, homework:homework })
             })
 
             if (response.ok) {
                 const result = await response.json()
-
-                setAssignedHomework((prevHomework => [...prevHomework, result]))
-                setSuccess('Homework assigned successfully!')
+                setAssignedHomework((prevHomework => [...prevHomework, result.newHomework]))
+                setSuccess(result.message)
             } else {
                 const error = await response.json()
                 console.log(error) // LOG
