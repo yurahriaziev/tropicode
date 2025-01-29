@@ -1,9 +1,38 @@
 import React, { useEffect, useState } from "react";
-import { DateTime } from "luxon";
 
 export default function Class({ index, classData, view, handleRemoveClass}) {
     const [joinActive, setJoinActive] = useState(false)
     const [status, setStatus] = useState(classData.status)
+
+    useEffect(() => {
+        console.log(classData.status)
+        const updateJoinState = () => {
+            const currentUTCTime = new Date()
+            const utcStartDate = new Date(classData.start)
+            const utcEndDate = new Date(classData.end)
+
+            const fiveBefore = new Date(utcStartDate.getTime() - 5 * 60 * 1000)
+
+            if (utcStartDate <= currentUTCTime && currentUTCTime <= utcEndDate) {
+                setStatus('LIVE')
+                setJoinActive(true)
+            } else if (currentUTCTime >= fiveBefore && currentUTCTime < utcStartDate) {
+                setStatus('UPCOMING')
+                setJoinActive(true)
+            } else if (currentUTCTime < utcStartDate) {
+                setStatus('UPCOMING')
+                setJoinActive(false)
+            } else {
+                setStatus('FINISHED')
+                setJoinActive(false)
+            }
+        }
+
+        updateJoinState()
+        const interval = setInterval(updateJoinState, 1000)
+
+        return () => clearInterval(interval)
+    }, [classData])
 
     function formatTimeToEST(utcTimeString) { // GETS FULL FORMATED DATE
         const utcDate = new Date(utcTimeString)

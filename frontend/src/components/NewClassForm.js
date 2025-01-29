@@ -60,17 +60,17 @@ export default function NewClassForm({ handleNewClassClick, setError, createNewM
 
     // for debugging
     const startTimeOptions = []
-    for (let hour = 9; hour <= 10; hour++) {
+    for (let hour = 11; hour <= 12; hour++) {
         for (let min = 0; min < 60; min+=1) {
-            if (hour === 10 && min > 0) break
+            if (hour === 12 && min > 0) break
             const formatedTime = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`
             startTimeOptions.push(formatedTime)
         }
     }
     const endTimeOptions = []
-    for (let hour = 9; hour <= 10; hour++) {
+    for (let hour = 11; hour <= 12; hour++) {
         for (let min = 0; min < 60; min+=1) {
-            if (hour === 10 && min > 0) break
+            if (hour === 12 && min > 0) break
             const formatedTime = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`
             endTimeOptions.push(formatedTime)
         }

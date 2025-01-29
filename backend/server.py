@@ -98,20 +98,14 @@ def update_class_status():
         print(f"Error updating class status: {e}")
 
 def get_class_status(start_time, end_time):
-    current = datetime.now().replace(tzinfo=dt_timezone.utc)
-    start = datetime.fromisoformat(start_time).astimezone(dt_timezone.utc)
-    end = datetime.fromisoformat(end_time).astimezone(dt_timezone.utc)
+    current_utc_time = datetime.now(dt_timezone.utc)
+    start_utc_time = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
+    end_utc_time = datetime.fromisoformat(end_time.replace('Z', '+00:00'))
 
-    print()
-    print('CURRENT', current)
-    print('START', start)
-    print('END', end)
-    print()
-
-    if current < start:
-        return 'UPCOMING'
-    elif start <= current <= end:
+    if start_utc_time <= current_utc_time <= end_utc_time:
         return 'LIVE'
+    elif current_utc_time < start_utc_time:
+        return 'UPCOMING'
     else:
         return 'FINISHED'
 
@@ -245,7 +239,6 @@ def check_token_expiry():
         print_red(f'Error in /check-token: {str(e)}')
         return jsonify({'error': 'Internal server error'}), 500
         
-
 @app.route('/create-meeting', methods=['POST'])
 def create_meeting():
     try:
@@ -324,7 +317,10 @@ def create_meeting():
             
             add_new_class(tutor_id, class_id)
 
-            new_class = {'link':meet_link, 'student_id':student_id, 'tutor_id':tutor_id, 'class_id':class_id, 'start':startTime, 'end':endTime, 'title':summary}
+            new_class_status = get_class_status(startTime,  endTime)
+            print_red(new_class_status)
+
+            new_class = {'link':meet_link, 'student_id':student_id, 'tutor_id':tutor_id, 'class_id':class_id, 'start':startTime, 'end':endTime, 'title':summary, 'status':new_class_status}
 
             classes_ref = db.collection('classes')
             classes_ref.document(class_id).set(new_class)

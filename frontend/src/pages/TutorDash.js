@@ -211,7 +211,7 @@ function TutorDash() {
                 const error = await response.json()
                 console.log(error)  // LOG
                 setError(error.error)
-                window.location.href = `${API_BASE_URL}/#/tutor-dash/${tutorId}/${isGoogleConnected}`
+                // window.location.href = `${API_BASE_URL}/#/tutor-dash/${tutorId}/${isGoogleConnected}`
             }
         } catch (error) {
             console.error('Error:', error)  // LOG
