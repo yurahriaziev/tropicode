@@ -107,6 +107,7 @@ function TutorDash() {
                     setStudents(result.students)
                     setUpcomingClasses(result.upcomingClasses)
                     // fetch assigned homework here
+                    setAssignedHomework(result.assignedHomework)
                     console.log(result.upcomingClasses)
                 } else {
                     const result = await response.json()

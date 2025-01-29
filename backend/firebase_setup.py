@@ -135,7 +135,19 @@ def remove_class_db(tutor_id, student_id, class_id):
 def add_new_homework(homework):
     try:
         homework_ref = db.collection('homework')
-        homework_ref.document(generate_id(20)).set(homework)
+        homework_id = generate_id(20)
+        homework_ref.document(homework_id).set(homework)
+
+        tutor_ref = db.collection('tutors').document(homework.get('tutorId'))
+        tutor_ref.update({
+            'assigned_homework':firestore.ArrayUnion([homework_id])
+        })
+
+        stud_ref = db.collection('students').document(homework.get('studId'))
+        stud_ref.update({
+            'homework':firestore.ArrayUnion([homework_id])
+        })
+
         return f'Homework assigned successfully!'
     except Exception as e:
         return f'Error occured in add_new_homework - {str(e)}'

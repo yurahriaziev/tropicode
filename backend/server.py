@@ -397,6 +397,7 @@ def process_login():
 def tutor_dash():    
     students = []
     classes = []
+    homeworks = []
     data = request.json
     print(data)
     try:
@@ -438,10 +439,16 @@ def tutor_dash():
             class_data['endTime'] = end_time
             classes.append(class_data)
 
+        homework_ids= tutor_data.get('assigned_homework')
+        for h_id in homework_ids:
+            h_ref = db.collection('homework').document(h_id)
+            h_data = h_ref.get().to_dict()
+            homeworks.append(h_data)
+
     except Exception as e:
         return jsonify({'message':f'SERVER - /tutor-dash - Error occured when fetching tutor data: {str(e)}'}), 403
         
-    return jsonify({"message": "Welcome to the tutor dashboard!", "students":students, 'tutorData':tutor_data, 'upcomingClasses':classes})
+    return jsonify({"message": "Welcome to the tutor dashboard!", "students":students, 'tutorData':tutor_data, 'upcomingClasses':classes, 'assignedHomework':homeworks})
 
 @app.route('/remove-class', methods=['POST'])
 @require_role('tutor')
