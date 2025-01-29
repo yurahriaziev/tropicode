@@ -570,6 +570,7 @@ def create_student():
 @require_role('student')
 def student_dash():
     classes = []
+    homeworks = []
     try:
         data = request.json
         if not data['studentId']:
@@ -583,6 +584,9 @@ def student_dash():
             class_data = class_ref.get().to_dict()
             class_data['status'] = get_class_status(class_data.get('start'), class_data.get('end'))
             classes.append(class_data)
+
+        for id in stud_data.get('homework', []):
+            pass
 
     except Exception as e:
         return jsonify({'message':f'SERVER - Error occured when fetching student dashboard: {str(e)}'}), 403
