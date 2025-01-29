@@ -6,6 +6,7 @@ import TutorStudentsList from "../components/TutorStudentsList";
 import NewClassForm from "../components/NewClassForm";
 import API_BASE_URL from "../config";
 import TutorClassList from "../components/TutorClassList";
+import TutorHomeworkList from "../components/TutorHomeworkList";
 
 function TutorDash() {
     const { tutorId } = useParams()
@@ -19,10 +20,16 @@ function TutorDash() {
     const isGoogleConnected = googleConn === "true"
     const [newClassForm, setNewClassForm] = useState(false)
     const [upcomingClasses, setUpcomingClasses] = useState([])
+    const [assignedHomework, setAssignedHomework] = useState([])
+    const [currentTab, setCurrentTab] = useState('classes')
 
     const handleAddStudentClick = (open) => {
         setAddStudentForm(open)
         if (open) setSuccess('')
+    }
+
+    const handleTabSwitch = (tab) => {
+        setCurrentTab(tab)
     }
 
     const handleNewClassClick = async(open) => {
@@ -99,6 +106,7 @@ function TutorDash() {
                     setTutorData(result.tutorData)
                     setStudents(result.students)
                     setUpcomingClasses(result.upcomingClasses)
+                    // fetch assigned homework here
                     console.log(result.upcomingClasses)
                 } else {
                     const result = await response.json()
@@ -214,7 +222,7 @@ function TutorDash() {
                 const error = await response.json()
                 console.log(error)  // LOG
                 setError(error.error)
-                window.location.href = `${API_BASE_URL}/google/login?tutorId=${tutorId}`
+                window.location.href = `${API_BASE_URL}/#/tutor-dash/${tutorId}/${isGoogleConnected}`
             }
         } catch (error) {
             console.error('Error:', error)  // LOG
@@ -224,21 +232,29 @@ function TutorDash() {
 
     const handleAddHomework = async(studId, homework) => {
         try {
-            // const response = await fetch(`${API_BASE_URL}/add-homework`, {
-            //     method:'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${localStorage.getItem('token')}`
-            //     },
-            //     body: JSON.stringify({ stud_id })
-            // })
+            const response = await fetch(`${API_BASE_URL}/add-homework`, {
+                method:'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ studId, homework:homework })
+            })
 
-            // if (response.ok) {
-            //     const result = await response.json()
-            // }
-            console.log(studId)
-            console.log(tutorId)
-            console.log(homework)
+            if (response.ok) {
+                const result = await response.json()
+
+                setAssignedHomework((prevHomework => [...prevHomework, result]))
+                setSuccess('Homework assigned successfully!')
+            } else {
+                const error = await response.json()
+                console.log(error) // LOG
+                setError(error.error)
+            }
+
+            // console.log(studId)
+            // console.log(tutorId)
+            // console.log(homework)
         } catch (error) {
             console.error('Error:', error)  // LOG
             setError(`An error occurred while adding new homework to ${studId}`)
@@ -293,9 +309,20 @@ function TutorDash() {
                                     setSuccess={setSuccess}
                 />
             </div>
-            <div className="classes-cont">
-                <h2>Your classes</h2>
-                <TutorClassList upcomingClasses={upcomingClasses} handleRemoveClass={handleRemoveClass} />
+            <div className="classes-homework-cont">
+                {currentTab === 'classes' ? (
+                    <div className="classes-cont">
+                        <button onClick={() => handleTabSwitch('homework')}>Homework</button>
+                        <h2>Your classes</h2>
+                        <TutorClassList upcomingClasses={upcomingClasses} handleRemoveClass={handleRemoveClass} />
+                    </div>
+                ) : (
+                    <div className="homework-cont">
+                        <button onClick={() => handleTabSwitch('classes')}>Classes</button>
+                        <h2>Assigned Homework</h2>
+                        <TutorHomeworkList assignedHomework={assignedHomework} />
+                    </div>
+                )}
             </div>
         </div>
     )
