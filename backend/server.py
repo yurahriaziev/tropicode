@@ -16,6 +16,8 @@ import secrets
 from pytz import timezone as pytz_timezone
 from dateutil.parser import parse
 
+import redis
+
 from authlib.integrations.flask_client import OAuth
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -160,6 +162,7 @@ def is_token_expired(token_expiry):
     now = datetime.utcnow().replace(tzinfo=dt_timezone.utc)
     return token_expiry < now
 
+redis_client = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
 @app.route('/google/login', methods=['GET'])
 def google_login():
     tutor_id = request.args.get('tutorId')
@@ -171,7 +174,8 @@ def google_login():
     if not tutor_doc.exists:
         return jsonify({'error': f'Tutor with ID {tutor_id} not found'}), 404
     
-    state = json.dumps({'tutorId':tutor_id})
+    state = str(uuid.uuid4())
+    redis_client.setex(state, 300, tutor_id)
     redirect_uri = url_for('google_callback', _external=True)
     return google.authorize_redirect(redirect_uri, state=state)
     
@@ -181,19 +185,22 @@ def google_callback():
     user_info = google.get('userinfo').json()
 
     state = request.args.get('state')
+    tutor_id = redis_client.get(state)
     print('GOT HERE')
     print(f"State parameter: {state}")
+
     if not state:
         print("State parameter is missing!")
         return jsonify({'error': 'State parameter is missing'}), 400
-    
-    try:
-        state_data = json.loads(state)
-        tutor_id = state_data.get('tutorId')
-        if not tutor_id:
-            return jsonify({'error': 'Tutor ID is missing from state'}), 400
-    except json.JSONDecodeError:
-        return jsonify({'error': 'Failed to decode state parameter'}), 400
+    redis_client.delete(state)
+
+    # try:
+    #     state_data = json.loads(state)
+    #     tutor_id = state_data.get('tutorId')
+    #     if not tutor_id:
+    #         return jsonify({'error': 'Tutor ID is missing from state'}), 400
+    # except json.JSONDecodeError:
+    #     return jsonify({'error': 'Failed to decode state parameter'}), 400
     print('GOT HERE')
     email = user_info.get('email')
     google_id = user_info.get('id')
