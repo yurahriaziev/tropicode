@@ -181,50 +181,57 @@ def google_login():
     
 @app.route('/oauth2callback')
 def google_callback():
-    print("OAuth2 Callback: Received request")
+    try:
+        print("OAuth2 Callback: Received request")
+        logging.debug("OAuth2 Callback: Received request")
 
-    state = request.args.get('state')
-    if not state:
-        print("State parameter is missing!")
-        return jsonify({'error': 'State parameter is missing'}), 400
+        state = request.args.get('state')
+        if not state:
+            print("State parameter is missing!")
+            logging.error("Error: Missing state parameter")
+            return jsonify({'error': 'State parameter is missing'}), 400
     
-    tutor_id = redis_client.get(state)
-    if not tutor_id:
-        print(f"Error: State {state} not found in Redis (expired or incorrect)")
-        return jsonify({'error': 'Invalid or expired state parameter'}), 400
+        tutor_id = redis_client.get(state)
+        if not tutor_id:
+            print(f"Error: State {state} not found in Redis (expired or incorrect)")
+            logging.error(f"Error: State {state} not found in Redis (expired or incorrect)")
+            return jsonify({'error': 'Invalid or expired state parameter'}), 400
 
-    redis_client.delete(state)
+        redis_client.delete(state)
 
-    token = google.authorize_access_token()
-    print(f"Token received: {token}")
+        token = google.authorize_access_token()
+        logging.debug(f"Token received: {token}")
     
-    user_info = google.get('userinfo').json()
-    print(f"User info received: {user_info}")
+        user_info = google.get('userinfo').json()
+        logging.debug(f"User info received: {user_info}")
 
-    email = user_info.get('email')
-    google_id = user_info.get('id')
+        email = user_info.get('email')
+        google_id = user_info.get('id')
 
-    tutor_ref = db.collection('tutors').document(tutor_id)
-    update_data = {
-        'google_email': email,
-        'google_id': google_id,
-        'google_access_token': token['access_token'],
-    }
+        tutor_ref = db.collection('tutors').document(tutor_id)
+        update_data = {
+            'google_email': email,
+            'google_id': google_id,
+            'google_access_token': token['access_token'],
+        }
 
-    if 'refresh_token' in token:
-        update_data['google_refresh_token'] = token['refresh_token']
-    else:
-        print_red("Warning: No refresh_token received. Reauthorization may be needed.")
+        if 'refresh_token' in token:
+            update_data['google_refresh_token'] = token['refresh_token']
+        else:
+            print_red("Warning: No refresh_token received. Reauthorization may be needed.")
 
-    if 'expires_in' in token:
-        update_data['token_expiry'] = datetime.utcnow() + timedelta(seconds=token['expires_in'])
+        if 'expires_in' in token:
+            update_data['token_expiry'] = datetime.utcnow() + timedelta(seconds=token['expires_in'])
 
-    tutor_ref.update(update_data)
-    print(f"Successfully updated tutor {tutor_id} in Firestore")
+        tutor_ref.update(update_data)
+        logging.debug(f"Successfully updated tutor {tutor_id} in Firestore")
 
-    tutor_dash_url = f"{production_url}/#/tutor-dash/{tutor_id}/true"
-    print('got here 1')
-    return redirect(tutor_dash_url)
+        tutor_dash_url = f"{production_url}/#/tutor-dash/{tutor_id}/true"
+        logging.info(f"Redirecting to {tutor_dash_url}")
+        return redirect(tutor_dash_url)
+    except Exception as e:
+        logging.error(f"ERROR in OAuth2 Callback: {str(e)}", exc_info=True)
+        return jsonify({'error': f'Internal Server Error: {str(e)}'}), 500
     
 @app.route('/check-token', methods=['POST', 'GET'])
 @require_role('tutor')
