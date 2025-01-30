@@ -181,29 +181,29 @@ def google_login():
     
 @app.route('/oauth2callback')
 def google_callback():
-    token = google.authorize_access_token()
-    user_info = google.get('userinfo').json()
+    print("OAuth2 Callback: Received request")
 
     state = request.args.get('state')
-    tutor_id = redis_client.get(state)
-    print('GOT HERE')
-    print(f"State parameter: {state}")
-
     if not state:
         print("State parameter is missing!")
         return jsonify({'error': 'State parameter is missing'}), 400
+    
+    tutor_id = redis_client.get(state)
+    if not tutor_id:
+        print(f"Error: State {state} not found in Redis (expired or incorrect)")
+        return jsonify({'error': 'Invalid or expired state parameter'}), 400
+
     redis_client.delete(state)
 
-    # try:
-    #     state_data = json.loads(state)
-    #     tutor_id = state_data.get('tutorId')
-    #     if not tutor_id:
-    #         return jsonify({'error': 'Tutor ID is missing from state'}), 400
-    # except json.JSONDecodeError:
-    #     return jsonify({'error': 'Failed to decode state parameter'}), 400
-    print('GOT HERE')
+    token = google.authorize_access_token()
+    print(f"Token received: {token}")
+    
+    user_info = google.get('userinfo').json()
+    print(f"User info received: {user_info}")
+
     email = user_info.get('email')
     google_id = user_info.get('id')
+
     tutor_ref = db.collection('tutors').document(tutor_id)
     update_data = {
         'google_email': email,
@@ -220,7 +220,7 @@ def google_callback():
         update_data['token_expiry'] = datetime.utcnow() + timedelta(seconds=token['expires_in'])
 
     tutor_ref.update(update_data)
-    print(google_id)
+    print(f"Successfully updated tutor {tutor_id} in Firestore")
 
     tutor_dash_url = f"{production_url}/#/tutor-dash/{tutor_id}/true"
     print('got here 1')
