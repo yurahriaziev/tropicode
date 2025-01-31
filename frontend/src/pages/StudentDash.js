@@ -3,6 +3,7 @@ import withAuth from "../withAuth";
 import { useNavigate, useParams } from "react-router-dom";
 import API_BASE_URL from "../config";
 import StudentClassList from "../components/StudentClassList";
+import StudentHomeworkList from "../components/StudentHomeworkList";
 
 function StudentDash() {
     const navigate = useNavigate()
@@ -47,7 +48,7 @@ function StudentDash() {
                     console.log('Full result\n', result)    // LOG
                     setStudentData(result.studentData)
                     setUpcomingClasses(result.classes)
-                    
+                    setAssignedHomework(result.homeworks)
                 } else {
                     const result = await response.json()
                     setError(result.error || "Error fetching student dash")
@@ -78,6 +79,7 @@ function StudentDash() {
             ) : (
                 <>
                     <h2>Your homework<button onClick={() => handleTabSwitch('classes')}>Classes</button></h2>
+                    <StudentHomeworkList homeworks={assignedHomework} />
                 </>
             )}
         </div>

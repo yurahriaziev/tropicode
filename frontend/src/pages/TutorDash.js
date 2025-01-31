@@ -151,6 +151,34 @@ function TutorDash() {
         }
     }
 
+    const handleRemoveHomework = async(hid) => {
+        try {
+            const token = localStorage.getItem('token')
+            const response = await fetch(`${API_BASE_URL}/remove-homework`, {
+                method:'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({hid})
+            })
+
+            if (response.ok) {
+                const result = await response.json()
+                setSuccess(result.message)
+                setAssignedHomework((prevHomeworks) => prevHomeworks.filter(homework => homework.id !== hid))
+            } else {
+                const result = await response.json()
+                setError(result.error)
+                console.log(result.error)
+            }
+        } catch(error) {
+            console.log(error.message)  // LOG
+            setError(error.message)
+        }
+    }
+
     const handleRemoveClass = async(classId, studentId) => {
         try {
             const token = localStorage.getItem("token")
@@ -308,7 +336,7 @@ function TutorDash() {
                     <div className="homework-cont">
                         <button onClick={() => handleTabSwitch('classes')}>Classes</button>
                         <h2>Assigned Homework</h2>
-                        <TutorHomeworkList assignedHomework={assignedHomework} />
+                        <TutorHomeworkList assignedHomework={assignedHomework} handleRemoveHomework={handleRemoveHomework} />
                     </div>
                 )}
             </div>

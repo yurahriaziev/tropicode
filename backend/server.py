@@ -1,6 +1,6 @@
 from config import app, production_url
 from flask import jsonify, request, session, redirect, url_for
-from firebase_setup import firestore, db, auth, add_tutor, remove_user, add_student, add_new_class, remove_class_db, add_new_homework
+from firebase_setup import firestore, db, auth, add_tutor, remove_user, add_student, add_new_class, remove_class_db, add_new_homework, remove_homework_db
 from functools import wraps
 import requests
 
@@ -36,8 +36,6 @@ def generate_class_id(length):
 
 def format_time_to_est(iso_time):
     mil_time = parse(iso_time)
-    # est = pytz_timezone('America/New_York')
-    # est_time = utc_time.astimezone(est)
     return mil_time.strftime('%I:%M %p')
 
 def extract_est_date_only(iso_time):
@@ -174,8 +172,12 @@ def google_login():
     if not tutor_doc.exists:
         return jsonify({'error': f'Tutor with ID {tutor_id} not found'}), 404
     
-    state = str(uuid.uuid4())
-    redis_client.setex(state, 300, tutor_id)
+    state = json.dumps({'tutorId':tutor_id}) # FOR LOCAL
+
+    # FOR PROD
+    # state = str(uuid.uuid4())   
+    # redis_client.setex(state, 300, tutor_id)
+
     redirect_uri = url_for('google_callback', _external=True)
     return google.authorize_redirect(redirect_uri, state=state)
     
@@ -191,13 +193,15 @@ def google_callback():
             logging.error("Error: Missing state parameter")
             return jsonify({'error': 'State parameter is missing'}), 400
     
-        tutor_id = redis_client.get(state)
+        # tutor_id = redis_client.get(state)
+        state_data = json.loads(state)
+        tutor_id = state_data.get('tutorId')
         if not tutor_id:
             print(f"Error: State {state} not found in Redis (expired or incorrect)")
             logging.error(f"Error: State {state} not found in Redis (expired or incorrect)")
             return jsonify({'error': 'Invalid or expired state parameter'}), 400
 
-        redis_client.delete(state)
+        # redis_client.delete(state)
 
         token = google.authorize_access_token()
         logging.debug(f"Token received: {token}")
@@ -600,12 +604,14 @@ def student_dash():
             classes.append(class_data)
 
         for id in stud_data.get('homework', []):
-            pass
+            homework_data = db.collection('homework').document(id).get().to_dict()
+            # add how much time is left to complete or some form of reminder
+            homeworks.append(homework_data)
 
     except Exception as e:
         return jsonify({'message':f'SERVER - Error occured when fetching student dashboard: {str(e)}'}), 403
     
-    return jsonify({"message": "Welcome to the student dashboard!", 'studentData':stud_data, 'classes':classes})
+    return jsonify({"message": "Welcome to the student dashboard!", 'studentData':stud_data, 'classes':classes, 'homeworks':homeworks})
 
 @app.route('/add-homework', methods=['POST'])
 @require_role('tutor')
@@ -624,6 +630,16 @@ def add_homework():
             return jsonify({'error':'Missing data or incorrect data'}), 400
     except Exception as e:
         return jsonify({'error':f'SERVER - Error occurerd when adding new homework: {str(e)}'}), 500
+    
+@app.route('/remove-homework', methods=['POST'])
+@require_role('tutor')
+def remove_homework():
+    try:
+        data = request.json
+        message = remove_homework_db(data.get('hid'))
+        return jsonify({'message':message}), 200
+    except Exception as e:
+        return jsonify({'error':f'SERVER - Error occurerd when removing homework: {str(e)}'}), 500
 
 
 @app.route("/server-test", methods=['POST', 'GET', 'OPTIONS'])

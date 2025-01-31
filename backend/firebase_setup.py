@@ -128,7 +128,7 @@ def remove_class_db(tutor_id, student_id, class_id):
         
         classes_ref.delete()
 
-        return 'Class succeessfully removed'
+        return 'Class succeessfully removed!'
     except Exception as e:
         return f'Error in remove_class_db - {str(e)}'
     
@@ -136,6 +136,7 @@ def add_new_homework(homework):
     try:
         homework_ref = db.collection('homework')
         homework_id = generate_id(20)
+        homework['id'] = homework_id
         homework_ref.document(homework_id).set(homework)
 
         tutor_ref = db.collection('tutors').document(homework.get('tutorId'))
@@ -151,3 +152,37 @@ def add_new_homework(homework):
         return f'Homework assigned successfully!'
     except Exception as e:
         return f'Error occured in add_new_homework - {str(e)}'
+    
+def remove_homework_db(h_id):
+    try:
+        if not h_id:
+            raise Exception("Missing homework id")
+        
+        homework_ref = db.collection('homework').document(h_id)
+        homework_data = homework_ref.get().to_dict()
+
+        stu_id = homework_data.get('studId')
+        if not stu_id:
+            raise Exception('Student ID missing in homework')
+        
+        tutor_id = homework_data.get('tutorId')
+        if not tutor_id:
+            raise Exception('Tutor ID missing in homework')
+        
+        s_ref = db.collection('students').document(stu_id)
+        t_ref = db.collection('tutors').document(tutor_id)
+        
+        s_data = s_ref.get().to_dict()
+        t_data = t_ref.get().to_dict()
+
+        s_updated_hw = [id for id in s_data.get('homework', []) if id != h_id]
+        t_updated_hw = [id for id in t_data.get('assigned_homework', []) if id != h_id]
+
+        s_ref.update({'homework':s_updated_hw})
+        t_ref.update({'assigned_homework':t_updated_hw})
+
+        homework_ref.delete()
+    
+        return 'Class succeessfully removed!'
+    except Exception as e:
+        return f'Error in remove_class_db - {str(e)}'

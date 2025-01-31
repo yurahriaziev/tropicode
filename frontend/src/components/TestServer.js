@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import API_BASE_URL from '../config';
 
 export default function TestServer() {
     const [error, setError] = useState('')
@@ -7,7 +8,7 @@ export default function TestServer() {
     useEffect(() => {
         const serverStatus = async() => {
             try {
-                const connect = await fetch('http://127.0.0.1:5000/server-test',
+                const connect = await fetch(`${API_BASE_URL}/server-test`,
                     {
                         method: "POST",
                         headers: {
