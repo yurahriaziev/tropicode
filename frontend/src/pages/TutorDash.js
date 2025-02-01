@@ -336,7 +336,7 @@ function TutorDash() {
                     <div className="homework-cont">
                         <button onClick={() => handleTabSwitch('classes')}>Classes</button>
                         <h2>Assigned Homework</h2>
-                        <TutorHomeworkList assignedHomework={assignedHomework} handleRemoveHomework={handleRemoveHomework} />
+                        <TutorHomeworkList assignedHomework={assignedHomework} handleRemoveHomework={handleRemoveHomework} setError={setError} />
                     </div>
                 )}
             </div>

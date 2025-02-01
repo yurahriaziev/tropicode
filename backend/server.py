@@ -1,4 +1,4 @@
-from config import app, production_url
+from config import app, production_url, s3, S3_BUCKET, S3_REGION
 from flask import jsonify, request, session, redirect, url_for
 from firebase_setup import firestore, db, auth, add_tutor, remove_user, add_student, add_new_class, remove_class_db, add_new_homework, remove_homework_db
 from functools import wraps
@@ -641,6 +641,32 @@ def remove_homework():
     except Exception as e:
         return jsonify({'error':f'SERVER - Error occurerd when removing homework: {str(e)}'}), 500
 
+@app.route('/upload-screenshot', methods=['POST'])
+@require_role('student')
+def upload_screenshot():
+    try:
+        print()
+        print("Request Content-Type:", request.content_type)
+        print("Request Files:", request.files)
+        print("File received:", request.files.get('file'))
+        print()
+
+        if 'file' not in request.files:
+            return jsonify({'error':'Missing file'}), 400
+        
+        file = request.files['file']
+        if file.filename == "":
+            return jsonify({'error':'Missing file name'}), 400
+        
+        try:
+            s3.upload_fileobj(file, S3_BUCKET, f'homework/{file.filename}', ExtraArgs={'ContentType': file.content_type})
+            file_url = f"https://{S3_BUCKET}.s3.{S3_REGION}.amazonaws.com/homework/{file.filename}"
+            return jsonify({'message':'Homework successfully uploaded!', 'downloadUrl':file_url})
+        except Exception as e:
+            return jsonify({'error':f'SERVER - Error while uploading file to S3 Bucket {str(e)}'}), 403
+    except Exception as e:
+        return jsonify({'error':f'SERVER - Error occured when uploading a screenshot: {str(e)}'}), 403
+    
 
 @app.route("/server-test", methods=['POST', 'GET', 'OPTIONS'])
 def server_test():

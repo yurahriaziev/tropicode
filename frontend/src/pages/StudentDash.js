@@ -13,10 +13,26 @@ function StudentDash() {
     const [upcomingClasses, setUpcomingClasses] = useState([])
     const [currentTab, setCurrentTab] = useState('classes')
     const [assignedHomework, setAssignedHomework] = useState([])
+    const [success, setSuccess] = useState('')
 
     const handleTabSwitch = (tab) => {
         setCurrentTab(tab)
     }
+
+    useEffect(() => {
+        if (success) {
+            const timer = setTimeout(() => {
+                setSuccess('')
+            }, 5000)
+            return () => clearTimeout(timer)
+        }
+        if (error) {
+            const timer = setTimeout(() => {
+                setError('')
+            }, 5000)
+            return () => clearTimeout(timer)
+        }
+    }, [success, error])
 
     const handleLogout = () => {
         navigate('/')
@@ -69,6 +85,11 @@ function StudentDash() {
                     {error}
                 </div>
             )}
+            {success && (
+                <div style={{ fontWeight: 'bold', backgroundColor: 'green', color: 'white', padding: '10px', marginBottom: '10px' }}>
+                    {success}
+                </div>
+            )}
             <button onClick={handleLogout}>Logout</button>
             <h1>Welcome {studentData.first}!</h1>
             {currentTab === 'classes' ? (
@@ -79,7 +100,7 @@ function StudentDash() {
             ) : (
                 <>
                     <h2>Your homework<button onClick={() => handleTabSwitch('classes')}>Classes</button></h2>
-                    <StudentHomeworkList homeworks={assignedHomework} />
+                    <StudentHomeworkList homeworks={assignedHomework} setError={setError} setSuccess={setSuccess}/>
                 </>
             )}
         </div>
