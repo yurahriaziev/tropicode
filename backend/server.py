@@ -645,12 +645,6 @@ def remove_homework():
 @require_role('student')
 def upload_screenshot():
     try:
-        print()
-        print("Request Content-Type:", request.content_type)
-        print("Request Files:", request.files)
-        print("File received:", request.files.get('file'))
-        print()
-
         if 'file' not in request.files:
             return jsonify({'error':'Missing file'}), 400
         
@@ -661,9 +655,16 @@ def upload_screenshot():
         try:
             s3.upload_fileobj(file, S3_BUCKET, f'homework/{file.filename}', ExtraArgs={'ContentType': file.content_type})
             file_url = f"https://{S3_BUCKET}.s3.{S3_REGION}.amazonaws.com/homework/{file.filename}"
+            
+            homework_ref = db.collection('homework').document(request.form.get('id'))
+            homework_ref.update({
+                'submission_url':file_url
+            })
+
             return jsonify({'message':'Homework successfully uploaded!', 'downloadUrl':file_url})
         except Exception as e:
             return jsonify({'error':f'SERVER - Error while uploading file to S3 Bucket {str(e)}'}), 403
+        
     except Exception as e:
         return jsonify({'error':f'SERVER - Error occured when uploading a screenshot: {str(e)}'}), 403
     

@@ -28,7 +28,7 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
         }
     }
 
-    const submitHomeworkScreenshot = async() => {
+    const submitHomeworkScreenshot = async(id) => {
         if (!homeworkScreenshot) {
             return setError("Select a file first!")
         }
@@ -36,9 +36,8 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
         
         const formData = new FormData()
         formData.append('file', homeworkScreenshot)
-        for (let [key, value] of formData.entries()) {
-            console.log(`${key}:`, value);
-        }
+        console.log(id)
+        formData.append('id', id)
 
         const token = localStorage.getItem('token')
         try {
@@ -52,9 +51,9 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
 
             if (response.ok) {
                 const result = await response.json()
-                console.log(result)
-                setDownloadURL(result.downloadURL)
+                setDownloadURL(result.downloadUrl)
                 setSuccess(result.message)
+                setScreenshotField(false)
             } else {
                 const result = await response.json()
                 setError(result.error)
@@ -65,7 +64,6 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
             setError("Upload failed. Try again!");
         }
     }
-
     return (
         <>
             {view === 'tutor' ? (
@@ -83,6 +81,7 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
                     <p>Desc:</p>
                     <p>{homeworkData.desc}</p>
                     <button onClick={() => handleScreenshotForm(true)}>Submit screenshot</button>
+                    {downloadURL && <a href={downloadURL}>Img link</a>}
                     {screenshotField && (
                         <>
                             <p>Submit your screenshot here</p>
@@ -95,7 +94,6 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
                             <button onClick={() => handleScreenshotForm(false)}>Close</button>
                         </>
                     )}
-                    {downloadURL && <a href={downloadURL}>Img link</a>}
                 </div>
             )}
         </>
