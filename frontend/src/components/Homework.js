@@ -94,6 +94,11 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
                             <button onClick={() => handleScreenshotForm(false)}>Close</button>
                         </>
                     )}
+                    <div>
+                        {homeworkData.submission_url && (
+                            <img src={homeworkData.submission_url} alt="Preview" style={{ width: 200, marginTop: 10 }}/>
+                        )}
+                    </div>
                 </div>
             )}
         </>
