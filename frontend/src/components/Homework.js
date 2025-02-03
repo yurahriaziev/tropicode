@@ -14,6 +14,11 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
     const [homeworkScreenshot, setHomeworkScreenshot] = useState(null)
     const [preview, setPreview] = useState(null)
     const [downloadURL, setDownloadURL] = useState('')
+    const [homeworkOpen, setHomeworkOpen] = useState(false)
+
+    const handleOpenHomework = (open) => {
+        setHomeworkOpen(open)
+    }
 
     const handleScreenshotForm = (open) => {
         setScreenshotField(open)
@@ -74,32 +79,36 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
                     <button onClick={() => handleRemoveHomework(homeworkData.id)}>Remove</button>
                 </div>
             ) : (
-                <div key={index}>
-                    <p>Title</p>
-                    <h3>{homeworkData.title}</h3>
-                    <p>Due: {formatTimeToEST(homeworkData.dueDate)} {homeworkData.dueDate.split('T')[0]}</p>
-                    <p>Desc:</p>
-                    <p>{homeworkData.desc}</p>
-                    <button onClick={() => handleScreenshotForm(true)}>Submit screenshot</button>
-                    {downloadURL && <a href={downloadURL}>Img link</a>}
-                    {screenshotField && (
-                        <>
-                            <p>Submit your screenshot here</p>
-                            <input type="file" onChange={handleFileChange} />
+                <>
+                    <h3 onClick={() => handleOpenHomework(true ? homeworkOpen === false : false)} style={{cursor: 'pointer'}}>Title</h3>
+                    {homeworkOpen && (
+                        <div key={index}>
+                            <h3>{homeworkData.title}</h3>
+                            <p>Due: {formatTimeToEST(homeworkData.dueDate)} {homeworkData.dueDate.split('T')[0]}</p>
+                            <p>Desc:</p>
+                            <p>{homeworkData.desc}</p>
+                            <button onClick={() => handleScreenshotForm(true)}>Submit screenshot</button>
+                            {downloadURL && <a href={downloadURL}>Img link</a>}
+                            {screenshotField && (
+                                <>
+                                    <p>Submit your screenshot here</p>
+                                    <input type="file" onChange={handleFileChange} />
+                                    <div>
+                                        {/* change later in frontend */}
+                                        {preview && <img src={preview} alt="Preview" style={{ width: 200, marginTop: 10 }} />} 
+                                    </div>
+                                    <button onClick={() => submitHomeworkScreenshot(homeworkData.id)}>Submit</button>
+                                    <button onClick={() => handleScreenshotForm(false)}>Close</button>
+                                </>
+                            )}
                             <div>
-                                {/* change later in frontend */}
-                                {preview && <img src={preview} alt="Preview" style={{ width: 200, marginTop: 10 }} />} 
+                                {homeworkData.submission_url && (
+                                    <img src={homeworkData.submission_url} alt="Preview" style={{ width: 200, marginTop: 10 }}/>
+                                )}
                             </div>
-                            <button onClick={() => submitHomeworkScreenshot(homeworkData.id)}>Submit</button>
-                            <button onClick={() => handleScreenshotForm(false)}>Close</button>
-                        </>
+                        </div>
                     )}
-                    <div>
-                        {homeworkData.submission_url && (
-                            <img src={homeworkData.submission_url} alt="Preview" style={{ width: 200, marginTop: 10 }}/>
-                        )}
-                    </div>
-                </div>
+                </>
             )}
         </>
     )
