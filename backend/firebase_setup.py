@@ -137,6 +137,7 @@ def add_new_homework(homework):
         homework_ref = db.collection('homework')
         homework_id = generate_id(20)
         homework['id'] = homework_id
+        homework['status'] = 'ASSIGNED'
         homework_ref.document(homework_id).set(homework)
 
         tutor_ref = db.collection('tutors').document(homework.get('tutorId'))

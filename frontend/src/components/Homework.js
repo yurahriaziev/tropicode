@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { DateTime } from "luxon";
 import API_BASE_URL from "../config";
 
@@ -13,8 +13,8 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
     const [screenshotField, setScreenshotField] = useState(false)
     const [homeworkScreenshot, setHomeworkScreenshot] = useState(null)
     const [preview, setPreview] = useState(null)
-    const [downloadURL, setDownloadURL] = useState('')
     const [homeworkOpen, setHomeworkOpen] = useState(false)
+    const [homeworkStatus, setHomeworkStatus] = useState(null)
 
     const handleOpenHomework = (open) => {
         setHomeworkOpen(open)
@@ -56,7 +56,6 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
 
             if (response.ok) {
                 const result = await response.json()
-                setDownloadURL(result.downloadUrl)
                 setSuccess(result.message)
                 setScreenshotField(false)
             } else {
@@ -69,6 +68,20 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
             setError("Upload failed. Try again!");
         }
     }
+
+    useEffect(() => {
+        const updateHomeworkStatus = () => {
+            if (homeworkData.submission_url) {
+                setHomeworkStatus('SUBMITTED')
+            } else {
+                setHomeworkStatus(homeworkData.status)
+            }
+        }
+
+        updateHomeworkStatus()
+        console.log(homeworkData)
+    }, [homeworkData])
+
     return (
         <>
             {view === 'tutor' ? (
@@ -76,11 +89,15 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
                     <p>Title</p>
                     <h3>{homeworkData.title}</h3>
                     <p>Due: {formatTimeToEST(homeworkData.dueDate)} {homeworkData.dueDate.split('T')[0]}</p>
+                    {homeworkData.status === 'SUBMITTED' ? <a target="_blank" rel="noopener noreferrer" href={homeworkData.submission_url}>Student submission</a> : 'Not submmited'}
                     <button onClick={() => handleRemoveHomework(homeworkData.id)}>Remove</button>
                 </div>
             ) : (
                 <>
-                    <h3 onClick={() => handleOpenHomework(true ? homeworkOpen === false : false)} style={{cursor: 'pointer'}}>Title</h3>
+                    <div className="homework-header">
+                        <h3 onClick={() => handleOpenHomework(true ? homeworkOpen === false : false)} style={{cursor: 'pointer'}}>Title</h3>
+                        <p>{homeworkStatus}</p>  {/* make animation for submission later */}
+                    </div>
                     {homeworkOpen && (
                         <div key={index}>
                             <h3>{homeworkData.title}</h3>
@@ -88,7 +105,7 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
                             <p>Desc:</p>
                             <p>{homeworkData.desc}</p>
                             <button onClick={() => handleScreenshotForm(true)}>Submit screenshot</button>
-                            {downloadURL && <a href={downloadURL}>Img link</a>}
+                            {homeworkData.submission_url && <a href={homeworkData.submission_url}>Img link</a>}
                             {screenshotField && (
                                 <>
                                     <p>Submit your screenshot here</p>

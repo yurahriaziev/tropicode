@@ -661,6 +661,10 @@ def upload_screenshot():
                 'submission_url':file_url
             })
 
+            homework_ref.update({
+                'status':'SUBMITTED'
+            })
+
             return jsonify({'message':'Homework successfully uploaded!', 'downloadUrl':file_url})
         except Exception as e:
             return jsonify({'error':f'SERVER - Error while uploading file to S3 Bucket {str(e)}'}), 403
