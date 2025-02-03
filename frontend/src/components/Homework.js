@@ -95,12 +95,11 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
             ) : (
                 <>
                     <div className="homework-header">
-                        <h3 onClick={() => handleOpenHomework(true ? homeworkOpen === false : false)} style={{cursor: 'pointer'}}>Title</h3>
+                        <h3 onClick={() => handleOpenHomework(true ? homeworkOpen === false : false)} style={{cursor: 'pointer'}}>{homeworkData.title}</h3>
                         <p>{homeworkStatus}</p>  {/* make animation for submission later */}
                     </div>
                     {homeworkOpen && (
                         <div key={index}>
-                            <h3>{homeworkData.title}</h3>
                             <p>Due: {formatTimeToEST(homeworkData.dueDate)} {homeworkData.dueDate.split('T')[0]}</p>
                             <p>Desc:</p>
                             <p>{homeworkData.desc}</p>
