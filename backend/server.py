@@ -172,11 +172,11 @@ def google_login():
     if not tutor_doc.exists:
         return jsonify({'error': f'Tutor with ID {tutor_id} not found'}), 404
     
-    state = json.dumps({'tutorId':tutor_id}) # FOR LOCAL
+    # state = json.dumps({'tutorId':tutor_id}) # FOR LOCAL
 
     # FOR PROD
-    # state = str(uuid.uuid4())   
-    # redis_client.setex(state, 300, tutor_id)
+    state = str(uuid.uuid4())   
+    redis_client.setex(state, 300, tutor_id)
 
     redirect_uri = url_for('google_callback', _external=True)
     return google.authorize_redirect(redirect_uri, state=state)
@@ -193,15 +193,15 @@ def google_callback():
             logging.error("Error: Missing state parameter")
             return jsonify({'error': 'State parameter is missing'}), 400
     
-        # tutor_id = redis_client.get(state)
-        state_data = json.loads(state)
-        tutor_id = state_data.get('tutorId')
+        tutor_id = redis_client.get(state)
+        # state_data = json.loads(state)
+        # tutor_id = state_data.get('tutorId')
         if not tutor_id:
             print(f"Error: State {state} not found in Redis (expired or incorrect)")
             logging.error(f"Error: State {state} not found in Redis (expired or incorrect)")
             return jsonify({'error': 'Invalid or expired state parameter'}), 400
 
-        # redis_client.delete(state)
+        redis_client.delete(state)
 
         token = google.authorize_access_token()
         logging.debug(f"Token received: {token}")
