@@ -6,8 +6,8 @@ import boto3
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
-# production_url = "https://www.tropicode.tech"
-production_url = "http://localhost:3000"
+production_url = "https://www.tropicode.tech"
+# production_url = "http://localhost:3000"
 
 CORS(app, resources={r"/*": {"origins": {"http://localhost:3000", "https://yurahriaziev.github.io", "https://www.tropicode.tech"}}})
 
