@@ -179,13 +179,11 @@ def google_login():
     if not tutor_doc.exists:
         return jsonify({'error': f'Tutor with ID {tutor_id} not found'}), 404
     
-    # state = json.dumps({'tutorId':tutor_id}) # FOR LOCAL
-
     # FOR PROD
     state = str(uuid.uuid4())   
     session['oauth_state'] = state
     session['tutor_id'] = tutor_id
-    # redis_client.setex(state, 300, tutor_id)
+    logging.debug(f"Generated state: {state} (Stored in session)")
 
     redirect_uri = url_for('google_callback', _external=True)
     return google.authorize_redirect(redirect_uri, state=state, prompt='consent')
@@ -197,6 +195,10 @@ def google_callback():
         logging.debug("OAuth2 Callback: Received request")
 
         received_state = request.args.get('state')
+        stored_state = session.get('oauth_state')
+        
+        logging.debug(f"OAuth Callback: Received state={received_state}, Stored state={stored_state}")
+
         if 'oauth_state' not in session or session['oauth_state'] != received_state:
             logging.error(f"State mismatch! Expected {session.get('oauth_state')}, got {received_state}")
             return jsonify({'error': 'CSRF Warning! State mismatch.'}), 400

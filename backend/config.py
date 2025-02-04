@@ -2,9 +2,13 @@ from flask import Flask
 from flask_cors import CORS
 import os
 import boto3
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+load_dotenv()
+SECRET_KEY = os.getenv('SECRET_KEY')
+app.config['SECRET_KEY'] = SECRET_KEY
 
 production_url = "https://www.tropicode.tech"
 # production_url = "http://localhost:3000"
