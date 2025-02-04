@@ -17,21 +17,12 @@ import secrets
 from pytz import timezone as pytz_timezone
 from dateutil.parser import parse
 
-import redis
-
 from authlib.integrations.flask_client import OAuth
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
 import logging
 logging.basicConfig(level=logging.INFO)
-
-# trial; configuring flask session to store state data
-app.config['SESSION_TYPE'] = 'redis'
-app.config['SESSION_PERMANENT'] = False
-app.config['SESSION_USE_SIGNER'] = True
-app.config['SESSION_KEY_PREFIX'] = 'oauth_'
-app.config['SESSION_REDIS'] = redis.StrictRedis(host='localhost', port=6379, db=1, decode_responses=True)
 
 ''' Helper funcs '''
 def parse_iso_time(iso_time):
@@ -183,7 +174,7 @@ def google_login():
     state = str(uuid.uuid4())   
     session['oauth_state'] = state
     session['tutor_id'] = tutor_id
-    logging.debug(f"Generated state: {state} (Stored in session)")
+    logging.debug(f"Generated state: {state} (Stored in session)") # log
 
     redirect_uri = url_for('google_callback', _external=True)
     return google.authorize_redirect(redirect_uri, state=state, prompt='consent')
@@ -192,15 +183,15 @@ def google_login():
 def google_callback():
     try:
         print("OAuth2 Callback: Received request")
-        logging.debug("OAuth2 Callback: Received request")
+        logging.debug("OAuth2 Callback: Received request") # log
 
         received_state = request.args.get('state')
         stored_state = session.get('oauth_state')
-        
-        logging.debug(f"OAuth Callback: Received state={received_state}, Stored state={stored_state}")
+
+        logging.debug(f"OAuth Callback: Received state={received_state}, Stored state={stored_state}") # log
 
         if 'oauth_state' not in session or session['oauth_state'] != received_state:
-            logging.error(f"State mismatch! Expected {session.get('oauth_state')}, got {received_state}")
+            logging.error(f"State mismatch! Expected {session.get('oauth_state')}, got {received_state}") # log
             return jsonify({'error': 'CSRF Warning! State mismatch.'}), 400
     
         tutor_id = session.pop('tutor_id', None)
@@ -208,7 +199,7 @@ def google_callback():
         
         if not tutor_id:
             print(f"Error: State {received_state} not found in Redis (expired or incorrect)")
-            logging.error(f"Error: State {received_state} not found in Redis (expired or incorrect)")
+            logging.error(f"Error: State {received_state} not found in Redis (expired or incorrect)") # log
             return jsonify({'error': 'Invalid or expired state parameter'}), 400
 
 
