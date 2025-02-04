@@ -3,6 +3,7 @@ from flask import jsonify, request, session, redirect, url_for
 from firebase_setup import firestore, db, auth, add_tutor, remove_user, add_student, add_new_class, remove_class_db, add_new_homework, remove_homework_db
 from functools import wraps
 import requests
+from flask_session import Session
 
 import jwt
 import os
@@ -24,6 +25,13 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 import logging
 logging.basicConfig(level=logging.INFO)
+
+# trial; configuring flask session to store state data
+app.config['SESSION_TYPE'] = 'redis'
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_KEY_PREFIX'] = 'oauth_'
+app.config['SESSION_REDIS'] = redis.StrictRedis(host='localhost', port=6379, db=1, decode_responses=True)
 
 ''' Helper funcs '''
 def parse_iso_time(iso_time):
@@ -160,7 +168,6 @@ def is_token_expired(token_expiry):
     now = datetime.utcnow().replace(tzinfo=dt_timezone.utc)
     return token_expiry < now
 
-redis_client = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
 @app.route('/google/login', methods=['GET'])
 def google_login():
     tutor_id = request.args.get('tutorId')
@@ -176,10 +183,12 @@ def google_login():
 
     # FOR PROD
     state = str(uuid.uuid4())   
-    redis_client.setex(state, 300, tutor_id)
+    session['oauth_state'] = state
+    session['tutor_id'] = tutor_id
+    # redis_client.setex(state, 300, tutor_id)
 
     redirect_uri = url_for('google_callback', _external=True)
-    return google.authorize_redirect(redirect_uri, state=state)
+    return google.authorize_redirect(redirect_uri, state=state, prompt='consent')
     
 @app.route('/oauth2callback')
 def google_callback():
@@ -187,21 +196,19 @@ def google_callback():
         print("OAuth2 Callback: Received request")
         logging.debug("OAuth2 Callback: Received request")
 
-        state = request.args.get('state')
-        if not state:
-            print("State parameter is missing!")
-            logging.error("Error: Missing state parameter")
-            return jsonify({'error': 'State parameter is missing'}), 400
+        received_state = request.args.get('state')
+        if 'oauth_state' not in session or session['oauth_state'] != received_state:
+            logging.error(f"State mismatch! Expected {session.get('oauth_state')}, got {received_state}")
+            return jsonify({'error': 'CSRF Warning! State mismatch.'}), 400
     
-        tutor_id = redis_client.get(state)
-        # state_data = json.loads(state)
-        # tutor_id = state_data.get('tutorId')
+        tutor_id = session.pop('tutor_id', None)
+        session.pop('oauth_state', None)
+        
         if not tutor_id:
-            print(f"Error: State {state} not found in Redis (expired or incorrect)")
-            logging.error(f"Error: State {state} not found in Redis (expired or incorrect)")
+            print(f"Error: State {received_state} not found in Redis (expired or incorrect)")
+            logging.error(f"Error: State {received_state} not found in Redis (expired or incorrect)")
             return jsonify({'error': 'Invalid or expired state parameter'}), 400
 
-        redis_client.delete(state)
 
         token = google.authorize_access_token()
         logging.debug(f"Token received: {token}")
