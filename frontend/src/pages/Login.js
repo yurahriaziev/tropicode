@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import API_BASE_URL from "../config";
-// import '../css/Login.css';
+import '../css/Login.css';
 
 export default function Login({ role }) {
     const [userCode, setUserCode] = useState('')
@@ -66,23 +66,21 @@ export default function Login({ role }) {
     }
 
     return (
-        <div className="login-cont">
-            {error && (
-                <div style={{ fontWeight: 'bold', backgroundColor: 'red', color: 'white', padding: '10px', marginBottom: '10px' }}>
-                    {error}
-                </div>
-            )}
-            <div>
-                <h2>Login with your code</h2>
+        <div className="login-page">
+            <div className="login-box">
+                {error && <div className="error-message">{error}</div>}
+                <h2 className="login-title">Login with Your Code</h2>
                 <input 
                     type="text" 
                     placeholder="Enter Code" 
                     maxLength={4} 
-                    className="code-input" 
+                    className="input-field" 
                     value={userCode} 
                     onChange={handleInput}
                 />
-                <button onClick={handleLogin}>Login</button>
+                <button className="login-button" onClick={handleLogin}>
+                    Login
+                </button>
             </div>
         </div>
     )

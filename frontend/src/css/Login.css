@@ -1,54 +1,79 @@
-body {
-    font-family: 'Open Sans', sans-serif;
-    background-color: #e5e5e5;
-    color: #333;
+/* Full-page styling */
+.login-page {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    margin: 0;
-}
-
-.login-cont {
-    background-color: #ffffff;
-    padding: 25px;
+    width: 100vw;
+    background: linear-gradient(to bottom right, #f3f4f6, #e8f5e9);
+  }
+  
+  /* Login Box */
+  .login-box {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 30px;
     border-radius: 12px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    width: 340px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     text-align: center;
-}
-
-.login-cont h2 {
-    margin-bottom: 20px;
-    color: #222;
-}
-
-.code-input {
-    width: calc(100% - 20px);
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 2px solid #bcbcbc;
-    border-radius: 5px;
-    font-size: 16px;
-}
-
-button {
-    padding: 10px 20px;
-    border: 2px solid #333;
-    border-radius: 5px;
-    background-color: transparent;
+    max-width: 350px;
+    width: 90%;
+    min-width: 280px;
+  }
+  
+  /* Heading */
+  .login-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 22px;
     color: #333;
-    font-weight: bold;
+    font-weight: 500;
+    margin-bottom: 15px;
+  }
+  
+  /* Input Field */
+  .input-field {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #bfbfbf;
+    border-radius: 8px;
+    font-size: 16px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.3s ease-in-out;
+    max-width: 280px;
+  }
+  
+  .input-field:focus {
+    border-color: #388e3c;
+  }
+  
+  /* Button */
+  .login-button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    background: #388e3c;
+    color: white;
+    font-size: 16px;
+    font-family: 'Poppins', sans-serif;
+    border-radius: 8px;
     cursor: pointer;
-    transition: all 0.3s;
-}
-
-button:hover {
-    background-color: #333;
-    color: #fff;
-}
-
-.login-cont div[style] {
+    transition: background 0.3s ease-in-out;
+    max-width: 280px;
+    margin-top: 15px;
+  }
+  
+  .login-button:hover {
+    background: #2e7d32;
+  }
+  
+  /* Error Message */
+  .error-message {
+    background: rgba(255, 0, 0, 0.1);
+    color: red;
+    padding: 10px;
+    border-radius: 6px;
     font-size: 14px;
-    border-radius: 4px;
-}
+    margin-bottom: 10px;
+  }
+  

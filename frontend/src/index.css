@@ -12,11 +12,11 @@ code {
     monospace;
 }
 
-.login-cont {
+/* .login-cont {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100vh;
   text-align: center;
-}
+} */
