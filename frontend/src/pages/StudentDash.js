@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import API_BASE_URL from "../config";
 import StudentClassList from "../components/StudentClassList";
 import StudentHomeworkList from "../components/StudentHomeworkList";
-import "../css/StudentDash.css"
+// import "../css/StudentDash.css"
 
 function StudentDash() {
     const navigate = useNavigate()
