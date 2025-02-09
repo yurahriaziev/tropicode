@@ -1,0 +1,113 @@
+.student-cont {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    background: linear-gradient(to bottom right, #f3f4f6, #e8f5e9);
+    padding-left: 240px; /* Adjust for sidebar */
+  }
+  
+  /* 🏠 Header */
+  .student-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 15px 20px;
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    margin: 20px;
+  }
+  
+  .student-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .logout-button {
+    background-color: #d32f2f;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+  }
+  
+  .logout-button:hover {
+    background-color: #b71c1c;
+  }
+  
+  /* 🗂️ Tabs */
+  .student-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px;
+  }
+  
+  .tab-button {
+    background: #e3e3e3;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    font-weight: 500;
+    border: none;
+  }
+  
+  .tab-button.active {
+    background: #9c27b0;
+    color: white;
+  }
+  
+  /* 📚 Content Section */
+  .student-content {
+    width: 80%;
+    max-width: 800px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* 📌 Cards */
+  .student-class-list,
+  .student-homework-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin-top: 20px;
+  }
+  
+  .class-card,
+  .homework-card {
+    background: #e8f5e9;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    font-size: 16px;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .class-card a {
+    background: #388e3c;
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s ease-in-out;
+  }
+  
+  .class-card a:hover {
+    background: #2e7d32;
+  }
+  

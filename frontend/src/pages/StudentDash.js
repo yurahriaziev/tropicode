@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import API_BASE_URL from "../config";
 import StudentClassList from "../components/StudentClassList";
 import StudentHomeworkList from "../components/StudentHomeworkList";
+import "../css/StudentDash.css"
 
 function StudentDash() {
     const navigate = useNavigate()
@@ -79,30 +80,72 @@ function StudentDash() {
     }, [studentId])
 
     return (
+        // <div className="student-cont">
+        //     {error && (
+        //         <div style={{ fontWeight: 'bold', backgroundColor: 'red', color: 'white', padding: '10px', marginBottom: '10px' }}>
+        //             {error}
+        //         </div>
+        //     )}
+        //     {success && (
+        //         <div style={{ fontWeight: 'bold', backgroundColor: 'green', color: 'white', padding: '10px', marginBottom: '10px' }}>
+        //             {success}
+        //         </div>
+        //     )}
+        //     <button onClick={handleLogout}>Logout</button>
+        //     <h1>Welcome {studentData.first}!</h1>
+        //     {currentTab === 'classes' ? (
+        //         <>
+        //             <h2>Your classes<button onClick={() => handleTabSwitch('homework')}>Homework</button></h2>
+        //             <StudentClassList upcomingClasses={upcomingClasses} />
+        //         </>
+        //     ) : (
+        //         <>
+        //             <h2>Your homework<button onClick={() => handleTabSwitch('classes')}>Classes</button></h2>
+        //             <StudentHomeworkList homeworks={assignedHomework} setError={setError} setSuccess={setSuccess}/>
+        //         </>
+        //     )}
+        // </div>
         <div className="student-cont">
-            {error && (
-                <div style={{ fontWeight: 'bold', backgroundColor: 'red', color: 'white', padding: '10px', marginBottom: '10px' }}>
-                    {error}
-                </div>
-            )}
-            {success && (
-                <div style={{ fontWeight: 'bold', backgroundColor: 'green', color: 'white', padding: '10px', marginBottom: '10px' }}>
-                    {success}
-                </div>
-            )}
-            <button onClick={handleLogout}>Logout</button>
-            <h1>Welcome {studentData.first}!</h1>
-            {currentTab === 'classes' ? (
-                <>
-                    <h2>Your classes<button onClick={() => handleTabSwitch('homework')}>Homework</button></h2>
-                    <StudentClassList upcomingClasses={upcomingClasses} />
-                </>
-            ) : (
-                <>
-                    <h2>Your homework<button onClick={() => handleTabSwitch('classes')}>Classes</button></h2>
-                    <StudentHomeworkList homeworks={assignedHomework} setError={setError} setSuccess={setSuccess}/>
-                </>
-            )}
+            {error && <div className="error-message">{error}</div>}
+            {success && <div className="success-message">{success}</div>}
+
+            <div className="student-header">
+                <h1 className="student-title">Welcome {studentData.first}!</h1>
+                <button className="logout-button" onClick={handleLogout}>Logout</button>
+            </div>
+
+            <div className="student-tabs">
+                <button 
+                    className={`tab-button ${currentTab === 'classes' ? 'active' : ''}`} 
+                    onClick={() => handleTabSwitch('homework')}
+                >
+                    Homework
+                </button>
+                <button 
+                    className={`tab-button ${currentTab === 'homework' ? 'active' : ''}`} 
+                    onClick={() => handleTabSwitch('classes')}
+                >
+                    Classes
+                </button>
+            </div>
+
+            <div className="student-content">
+                {currentTab === 'classes' ? (
+                    <>
+                        <h2 className="section-title">Your Classes</h2>
+                        <div className="student-class-list">
+                            <StudentClassList upcomingClasses={upcomingClasses} />
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <h2 className="section-title">Your Homework</h2>
+                        <div className="student-homework-list">
+                            <StudentHomeworkList homeworks={assignedHomework} setError={setError} setSuccess={setSuccess} />
+                        </div>
+                    </>
+                )}
+            </div>
         </div>
     )
 }
