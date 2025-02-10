@@ -107,11 +107,11 @@ function StudentDash() {
                 >
                     Homework
                 </button>
-                <button 
+                {/* <button 
                     onClick={handleGameClick}
                 >
                     Start Game
-                </button>
+                </button> */}
             </div>
 
             <div className="student-content">
