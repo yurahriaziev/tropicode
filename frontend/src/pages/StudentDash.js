@@ -80,31 +80,6 @@ function StudentDash() {
     }, [studentId])
 
     return (
-        // <div className="student-cont">
-        //     {error && (
-        //         <div style={{ fontWeight: 'bold', backgroundColor: 'red', color: 'white', padding: '10px', marginBottom: '10px' }}>
-        //             {error}
-        //         </div>
-        //     )}
-        //     {success && (
-        //         <div style={{ fontWeight: 'bold', backgroundColor: 'green', color: 'white', padding: '10px', marginBottom: '10px' }}>
-        //             {success}
-        //         </div>
-        //     )}
-        //     <button onClick={handleLogout}>Logout</button>
-        //     <h1>Welcome {studentData.first}!</h1>
-        //     {currentTab === 'classes' ? (
-        //         <>
-        //             <h2>Your classes<button onClick={() => handleTabSwitch('homework')}>Homework</button></h2>
-        //             <StudentClassList upcomingClasses={upcomingClasses} />
-        //         </>
-        //     ) : (
-        //         <>
-        //             <h2>Your homework<button onClick={() => handleTabSwitch('classes')}>Classes</button></h2>
-        //             <StudentHomeworkList homeworks={assignedHomework} setError={setError} setSuccess={setSuccess}/>
-        //         </>
-        //     )}
-        // </div>
         <div className="student-cont">
             {error && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}
@@ -116,16 +91,16 @@ function StudentDash() {
 
             <div className="student-tabs">
                 <button 
-                    className={`tab-button ${currentTab === 'classes' ? 'active' : ''}`} 
-                    onClick={() => handleTabSwitch('homework')}
-                >
-                    Homework
-                </button>
-                <button 
                     className={`tab-button ${currentTab === 'homework' ? 'active' : ''}`} 
                     onClick={() => handleTabSwitch('classes')}
                 >
                     Classes
+                </button>
+                <button 
+                    className={`tab-button ${currentTab === 'classes' ? 'active' : ''}`} 
+                    onClick={() => handleTabSwitch('homework')}
+                >
+                    Homework
                 </button>
             </div>
 
