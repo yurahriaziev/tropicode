@@ -79,6 +79,11 @@ function StudentDash() {
         fetchStudentDash()
     }, [studentId])
 
+    const handleGameClick = () => {
+        // 1. send to another route http://localhost:3000/#/game
+        // 2. stream pygame on that route
+    }
+
     return (
         <div className="student-cont">
             {error && <div className="error-message">{error}</div>}
@@ -101,6 +106,11 @@ function StudentDash() {
                     onClick={() => handleTabSwitch('homework')}
                 >
                     Homework
+                </button>
+                <button 
+                    onClick={handleGameClick}
+                >
+                    Start Game
                 </button>
             </div>
 

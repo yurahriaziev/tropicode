@@ -1,5 +1,5 @@
 from config import app, production_url, s3, S3_BUCKET, S3_REGION
-from flask import jsonify, request, session, redirect, url_for
+from flask import jsonify, request, session, redirect, url_for, Response
 from firebase_setup import firestore, db, auth, add_tutor, remove_user, add_student, add_new_class, remove_class_db, add_new_homework, remove_homework_db
 from functools import wraps
 import requests
@@ -22,6 +22,9 @@ from authlib.integrations.flask_client import OAuth
 from apscheduler.schedulers.background import BackgroundScheduler
 
 import logging
+
+import game
+
 logging.basicConfig(level=logging.INFO)
 
 ''' Helper funcs '''
@@ -681,9 +684,22 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(update_class_status, 'interval', minutes=1)
 scheduler.start()
 
+### GAME
+def generate_frames():
+    """Continuously get frames from game.py and stream them"""
+    while True:
+        frame = game.get_frame()  # Get frame from game.py
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+        
+@app.route('/video_feed')
+def video_feed():
+    """Flask route to stream Pygame video"""
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 if __name__ == '__main__':
     try:
-        # app.run(host='0.0.0.0', port=5000, debug=True)
-        app.run(host='0.0.0.0', port=5001, debug=True) # for local
+        app.run(host='0.0.0.0', port=5000, debug=True)
+        # app.run(host='0.0.0.0', port=5001, debug=True) # for local
     finally:
         scheduler.shutdown()
