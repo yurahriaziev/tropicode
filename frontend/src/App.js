@@ -5,7 +5,7 @@ import PageNotFound from './pages/PageNotFound';
 import AdminDash from './pages/AdminDash';
 import TutorDash from './pages/TutorDash';
 import StudentDash from './pages/StudentDash';
-import Game from './pages/Game';
+import GamePage from './pages/GamePage';
 
 function App() {
   return (
@@ -19,7 +19,7 @@ function App() {
         <Route path='/tutor-dash/:tutorId/:googleConn' element={<TutorDash />} />
         <Route path='/student-dash/:studentId' element={<StudentDash />} />
         <Route path='*' element={<PageNotFound />} />
-        <Route path='/game' element={<Game />} />
+        <Route path='/game' element={<GamePage />} />
       </Routes>
     </div>
   );

@@ -5,7 +5,7 @@ import boto3
 from dotenv import load_dotenv
 import redis
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static")
 app.secret_key = os.urandom(24)
 load_dotenv()
 SECRET_KEY = os.getenv('SECRET_KEY')
@@ -17,8 +17,8 @@ app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_KEY_PREFIX'] = 'oauth_'
 app.config['SESSION_REDIS'] = redis.StrictRedis(host='localhost', port=6379, db=1, decode_responses=True)
 
-production_url = "https://www.tropicode.tech"
-# production_url = "http://localhost:3000"
+# production_url = "https://www.tropicode.tech"
+production_url = "http://localhost:3000"
 
 CORS(app, resources={r"/*": {"origins": {"http://localhost:3000", "https://yurahriaziev.github.io", "https://www.tropicode.tech"}}})
 

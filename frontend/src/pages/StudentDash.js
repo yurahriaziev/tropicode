@@ -82,6 +82,7 @@ function StudentDash() {
     const handleGameClick = () => {
         // 1. send to another route http://localhost:3000/#/game
         // 2. stream pygame on that route
+        navigate('/game')
     }
 
     return (
@@ -107,11 +108,11 @@ function StudentDash() {
                 >
                     Homework
                 </button>
-                {/* <button 
+                <button 
                     onClick={handleGameClick}
                 >
                     Start Game
-                </button> */}
+                </button>
             </div>
 
             <div className="student-content">
