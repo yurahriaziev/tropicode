@@ -1,4 +1,4 @@
-from config import app, production_url, s3, S3_BUCKET, S3_REGION
+from config import app, production_url, s3, S3_BUCKET, S3_REGION, transfer_config
 from flask import jsonify, request, session, redirect, url_for, Response, send_from_directory
 from firebase_setup import firestore, db, auth, add_tutor, remove_user, add_student, add_new_class, remove_class_db, add_new_homework, remove_homework_db
 from functools import wraps
@@ -656,7 +656,7 @@ def upload_screenshot():
             return jsonify({'error':'Missing file name'}), 400
         
         try:
-            s3.upload_fileobj(file, S3_BUCKET, f'homework/{file.filename}', ExtraArgs={'ContentType': file.content_type})
+            s3.upload_fileobj(file, S3_BUCKET, f'homework/{file.filename}', ExtraArgs={'ContentType': file.content_type}, Config=transfer_config)
             file_url = f"https://{S3_BUCKET}.s3.{S3_REGION}.amazonaws.com/homework/{file.filename}"
             
             homework_ref = db.collection('homework').document(request.form.get('id'))
