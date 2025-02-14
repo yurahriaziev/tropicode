@@ -56,10 +56,12 @@ Each user has a specific role:
 ## Application Flowchart
 &nbsp; [Tutor Flow](#tutor-flow)  &nbsp; [Student Flow](#student-flow)
 ### General flow
-
+![general-flow-img](https://github.com/yurahriaziev/student-tutor-space/blob/main/frontend/public/general-flow.png)
 ### Tutor Flow
-
+![tutor-flow-1-img](https://github.com/yurahriaziev/student-tutor-space/blob/main/frontend/public/tutor-flow1.png)
+![tutor-flow-2-img](https://github.com/yurahriaziev/student-tutor-space/blob/main/frontend/public/tutor-fow2.png)
 ### Student Flow
+![student-flow](https://github.com/yurahriaziev/student-tutor-space/blob/main/frontend/public/student-flow.png)
 
 ## Frontend Structure
 #### Key Components
