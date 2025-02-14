@@ -19,15 +19,16 @@ app.config['SESSION_KEY_PREFIX'] = 'oauth_'
 app.config['SESSION_REDIS'] = redis.StrictRedis(host='localhost', port=6379, db=1, decode_responses=True)
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 
-production_url = "https://www.tropicode.tech"
-# production_url = "http://localhost:3000"
+# production_url = "https://www.tropicode.tech"
+production_url = "http://localhost:3000"
 
 CORS(app, resources={r"/*": {"origins": {"http://localhost:3000", "https://yurahriaziev.github.io", "https://www.tropicode.tech"}}})
 
 S3_BUCKET = 'tropicode-homework-files'
 S3_REGION = 'us-east-1'
 
-transfer_config = TransferConfig(multipart_threshold=5*1024*1024)
+# FIXME
+transfer_config = TransferConfig(multipart_threshold=10 * 1024 * 1024, max_concurrency=10, multipart_chunksize=10 * 1024 * 1024)
 s3 = boto3.client(
     's3',
     aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),

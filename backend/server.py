@@ -644,6 +644,7 @@ def remove_homework():
     except Exception as e:
         return jsonify({'error':f'SERVER - Error occurerd when removing homework: {str(e)}'}), 500
 
+# FIXME
 @app.route('/upload-screenshot', methods=['POST'])
 @require_role('student')
 def upload_screenshot():

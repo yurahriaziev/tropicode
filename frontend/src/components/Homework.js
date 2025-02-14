@@ -33,6 +33,7 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
         }
     }
 
+    // FIXME
     const submitHomeworkScreenshot = async(id) => {
         if (!homeworkScreenshot) {
             return setError("Select a file first!")
@@ -113,6 +114,7 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
                                         {/* change later in frontend */}
                                         {preview && <img src={preview} alt="Preview" style={{ width: 200, marginTop: 10 }} />} 
                                     </div>
+                                    {/* FIXME */}
                                     <button onClick={() => submitHomeworkScreenshot(homeworkData.id)}>Submit</button>
                                     <button onClick={() => handleScreenshotForm(false)}>Close</button>
                                 </>
