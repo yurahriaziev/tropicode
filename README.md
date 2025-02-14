@@ -11,6 +11,7 @@ Tropicode is a web application designed to manage tutors and students, allowing 
 - [Backend Structure](#backend-structure)
 - [AWS Integration](#aws-integration)
 - [Authentication](#authentication)
+- [Application Flowchart](#application-flowchart)
 - [Frontend Structure](#frontend-structure)
 
 ## Tech Stack
@@ -51,6 +52,14 @@ Each user has a specific role:
 - **Access tokens** are valid for **1 hour**.
 - Tutors using Google Meet must **refresh their token** when expired.
 - If a token expires, users must re-authenticate.
+
+## Application Flowchart
+&nbsp; [Tutor Flow](#tutor-flow)  &nbsp; [Student Flow](#student-flow)
+### General flow
+
+### Tutor Flow
+
+### Student Flow
 
 ## Frontend Structure
 #### Key Components
