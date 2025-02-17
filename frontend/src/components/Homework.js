@@ -96,7 +96,12 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
             ) : (
                 <>
                     <div className="homework-header">
-                        <h3 onClick={() => handleOpenHomework(true ? homeworkOpen === false : false)} style={{cursor: 'pointer'}}>{homeworkData.title}</h3>
+                        <h3 onClick={() => handleOpenHomework(true ? homeworkOpen === false : false)}
+                            style={{cursor: 'pointer', textDecoration: 'none'}}
+                            onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+                            onMouseLeave={(e) => e.target.style.textDecoration = 'none'}>
+                                {homeworkData.title}
+                        </h3>
                         <p>{homeworkStatus}</p>  {/* make animation for submission later */}
                     </div>
                     {homeworkOpen && (
