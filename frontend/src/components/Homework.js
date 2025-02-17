@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { DateTime } from "luxon";
-import API_BASE_URL from "../config";
+import {API_BASE_URL} from "../config";
+import IDE from "./IDE";
 
 export default function Homework({ index, homeworkData, view, handleRemoveHomework, setError, setSuccess }) {
     function formatTimeToEST(time) {
@@ -119,7 +120,6 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
                                         {/* change later in frontend */}
                                         {preview && <img src={preview} alt="Preview" style={{ width: 200, marginTop: 10 }} />} 
                                     </div>
-                                    {/* FIXME */}
                                     <button onClick={() => submitHomeworkScreenshot(homeworkData.id)}>Submit</button>
                                     <button onClick={() => handleScreenshotForm(false)}>Close</button>
                                 </>
@@ -128,6 +128,10 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
                                 {homeworkData.submission_url && (
                                     <img src={homeworkData.submission_url} alt="Preview" style={{ width: 200, marginTop: 10 }}/>
                                 )}
+                            </div>
+                            <div>
+                                <h3>Write and Run Your Code</h3>
+                                <IDE />
                             </div>
                         </div>
                     )}

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import API_BASE_URL from '../config';
+import {API_BASE_URL} from '../config';
 
 class Game extends Phaser.Scene {
     constructor() {

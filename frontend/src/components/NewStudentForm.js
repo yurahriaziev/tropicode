@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import API_BASE_URL from "../config";
+import {API_BASE_URL} from "../config";
 
 export default function NewStudentForm({ handleAddStudentClick, setError, setSuccess, setStudents, tutorId }) {
     const [first, setFirst] = useState('')

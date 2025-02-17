@@ -4,7 +4,7 @@ import NewStudentForm from "../components/NewStudentForm";
 import { useNavigate, useParams } from "react-router-dom";
 import TutorStudentsList from "../components/TutorStudentsList";
 import NewClassForm from "../components/NewClassForm";
-import API_BASE_URL from "../config";
+import { API_BASE_URL } from "../config";
 import TutorClassList from "../components/TutorClassList";
 import TutorHomeworkList from "../components/TutorHomeworkList";
 

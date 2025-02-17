@@ -673,6 +673,16 @@ def upload_screenshot():
     except Exception as e:
         return jsonify({'error':f'SERVER - Error occured when uploading a screenshot: {str(e)}'}), 403
     
+# @app.route('/run-code')
+# @require_role('tutor')
+# def run_code():
+#     try:
+#         data = request.get_json()
+#         code = data.get('code', '')
+
+#         result
+#     except Exception as e:
+#         return jsonify({"error": str(e)})
 
 @app.route("/server-test", methods=['POST', 'GET', 'OPTIONS'])
 def server_test():

@@ -3,7 +3,7 @@ import withAuth from "../withAuth";
 import NewTutorForm from "../components/NewTutorForm";
 import { useNavigate } from "react-router-dom";
 import AdminTutorInfo from "../components/AdminTutorInfo";
-import API_BASE_URL from "../config";
+import { API_BASE_URL } from "../config";
 
 function AdminDash() {
     const [error, setError] = useState('')

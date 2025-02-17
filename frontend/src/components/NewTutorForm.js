@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import API_BASE_URL from "../config";
+import { API_BASE_URL } from "../config";
 
 export default function NewTutorForm({ handleAddTutorClick, setError, setSuccess, setTutors }) {
     const [first, setFirst] = useState('')
