@@ -697,7 +697,6 @@ def get_code():
             return jsonify({'error':'Missing homework ID'})
         
         student_code = fetch_code(data.get('homeworkId'))
-        print(student_code)
         return jsonify({'message':'Fetched successfully', 'code':student_code}), 200
     except Exception as e:
         return jsonify({'error':f'SERVER - Error occured when fetching code: {str(e)}'}), 403
@@ -716,7 +715,7 @@ def serve_static(filename):
 
 if __name__ == '__main__':
     try:
-        # app.run(host='0.0.0.0', port=5000, debug=True)
-        app.run(host='0.0.0.0', port=5001, debug=True) # for local
+        app.run(host='0.0.0.0', port=5000, debug=True)
+        # app.run(host='0.0.0.0', port=5001, debug=True) # for local
     finally:
         scheduler.shutdown()
