@@ -131,7 +131,7 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
                             </div>
                             <div>
                                 <h3>Write and Run Your Code</h3>
-                                <IDE />
+                                <IDE homeworkId={homeworkData.id} setSuccess={setSuccess} setError={setError}/>
                             </div>
                         </div>
                     )}

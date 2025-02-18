@@ -187,3 +187,19 @@ def remove_homework_db(h_id):
         return 'Class succeessfully removed!'
     except Exception as e:
         return f'Error in remove_class_db - {str(e)}'
+    
+def add_code_submission(code, homework_id):
+    try:
+        submissions_ref = db.collection('codeSubmissions').document(homework_id)
+
+        doc = submissions_ref.get()
+        if not doc.exists:
+            submissions_ref.set({'code':code})
+        else:
+            submissions_ref.update({
+                'code': code
+            })
+
+        return 'Code submitted successfully'
+    except Exception as e:
+        return f'Error submmiting code. {str(e)}'

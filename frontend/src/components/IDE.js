@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import Editor from "@monaco-editor/react";
-import { PYTHON_RUN_API } from "../config";
+import { API_BASE_URL, PYTHON_RUN_API } from "../config";
 
-const IDE = () => {
+const IDE = ({ homeworkId, setSuccess, setError }) => {
     const [code, setCode] = useState("# Write your code here")
     const [output, setOutput] = useState('')
 
@@ -30,6 +30,34 @@ const IDE = () => {
         }
     }
 
+    const handleSubmit = async() => {
+        setOutput('Submitting...')
+
+        try {
+            const token = localStorage.getItem('token')
+
+            const respone = await fetch(`${API_BASE_URL}/submit-code`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ code, homeworkId })
+            })
+
+            const result = await respone.json()
+            if (respone.ok) {
+                setSuccess(result.message)
+                setOutput('Submitted')
+            } else {
+                setError(result.error)
+            }
+        } catch (error) {
+            setError("Error submitting code.");
+            console.log(error.nessage)
+        }
+    }
+
     return (
         <div style={{ padding: "20px", fontFamily: "Arial" }}>
         <Editor
@@ -41,6 +69,9 @@ const IDE = () => {
         />
         <button onClick={handleRun}>
             Run Code
+        </button>
+        <button onClick={handleSubmit}>
+            Submit Code
         </button>
         <h3>Output:</h3>
         <pre style={{ background: "#f4f4f4", padding: "10px", borderRadius: "5px" }}>
