@@ -20,7 +20,11 @@ const IDE = () => {
             }) 
 
             const data = await respone.json()
-            setOutput(data.output || data.error)
+            if (data.error) {
+                setOutput(data.error)
+            } else {
+                setOutput(data.output || 'No output returned')
+            }
         } catch (error) {
             setOutput("Error running code.");
         }
