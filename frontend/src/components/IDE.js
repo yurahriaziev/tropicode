@@ -1,10 +1,35 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Editor from "@monaco-editor/react";
 import { API_BASE_URL, PYTHON_RUN_API } from "../config";
 
 const IDE = ({ homeworkId, setSuccess, setError }) => {
     const [code, setCode] = useState("# Write your code here")
     const [output, setOutput] = useState('')
+
+    useEffect(() => {
+        const fetchCode = async() => {
+            const token = localStorage.getItem('token')
+            const response = await fetch(`${API_BASE_URL}/get-code`,{
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ homeworkId })
+            })
+
+            const result = await response.json()
+
+            if (response.ok) {
+                setCode(result.code || "# Write your code here")
+            } else {
+                setOutput('Failed to fetch your code')
+                console.log(result.error)
+            }
+        }
+
+        fetchCode()
+    }, [homeworkId])
 
     const handleRun = async() => {
         setOutput('Running...')

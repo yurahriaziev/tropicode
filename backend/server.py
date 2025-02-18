@@ -1,6 +1,6 @@
 from config import app, production_url, s3, S3_BUCKET, S3_REGION, transfer_config
 from flask import jsonify, request, session, redirect, url_for, Response, send_from_directory
-from firebase_setup import firestore, db, auth, add_tutor, remove_user, add_student, add_new_class, remove_class_db, add_new_homework, remove_homework_db, add_code_submission
+from firebase_setup import firestore, db, auth, add_tutor, remove_user, add_student, add_new_class, remove_class_db, add_new_homework, remove_homework_db, add_code_submission, fetch_code
 from functools import wraps
 import requests
 from flask_session import Session
@@ -673,12 +673,11 @@ def upload_screenshot():
     except Exception as e:
         return jsonify({'error':f'SERVER - Error occured when uploading a screenshot: {str(e)}'}), 403
     
-@app.route('/submit-code', methods=['POST', 'GET'])
+@app.route('/submit-code', methods=['POST'])
 @require_role('student')
 def submit_code():
     try:
         data = request.json
-        print(data)
         if not data.get('code'):
             return jsonify({'error': 'Missing code'}), 400
         if not data.get('homeworkId'):
@@ -689,6 +688,19 @@ def submit_code():
     except Exception as e:
         return jsonify({'error':f'SERVER - Error occured when submitting code: {str(e)}'}), 403
 
+@app.route('/get-code', methods=['POST', 'GET'])
+@require_role('student')
+def get_code():
+    try:
+        data = request.json
+        if not data:
+            return jsonify({'error':'Missing homework ID'})
+        
+        student_code = fetch_code(data.get('homeworkId'))
+        print(student_code)
+        return jsonify({'message':'Fetched successfully', 'code':student_code}), 200
+    except Exception as e:
+        return jsonify({'error':f'SERVER - Error occured when fetching code: {str(e)}'}), 403
 
 @app.route("/server-test", methods=['POST', 'GET', 'OPTIONS'])
 def server_test():

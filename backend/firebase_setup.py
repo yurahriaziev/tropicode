@@ -203,3 +203,16 @@ def add_code_submission(code, homework_id):
         return 'Code submitted successfully'
     except Exception as e:
         return f'Error submmiting code. {str(e)}'
+    
+def fetch_code(homework_id):
+    try:
+        submission_ref = db.collection('codeSubmissions').document(homework_id)
+
+        doc = submission_ref.get()
+        if doc.exists:
+            return doc.to_dict().get('code', '')
+        else:
+            return ""
+    except Exception as e:
+        print(f"Error fetching code: {str(e)}")
+        return ""
