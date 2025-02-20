@@ -50,7 +50,7 @@ export default function Class({ index, classData, view, handleRemoveClass}) {
     return (
         <>
             {view === 'student' ? (
-                <li key={index}>
+                <div key={index}>
                     <p>{classData.title}
                         <button disabled={!joinActive}>
                             {joinActive ? (
@@ -75,10 +75,10 @@ export default function Class({ index, classData, view, handleRemoveClass}) {
                     </p>
                     <p>{classData.studentName}</p>
                     <p><strong>Start: </strong>{formatTimeToEST(classData.start)}<strong>End: </strong>{formatTimeToEST(classData.end)}</p>
-                </li>
+                </div>
 
             ) : (
-                <li key={index}>
+                <div key={index}>
                     <p>{classData.title}</p>
                     <p className="class-status" style={{color: status === 'LIVE' ? 'red' : 'black',fontWeight: status === 'LIVE' ? 'bold' : 'normal'}}
                         >{status}</p>
@@ -92,7 +92,7 @@ export default function Class({ index, classData, view, handleRemoveClass}) {
                     <p><strong>Start: </strong>{getPartDate(formatTimeToEST(classData.start), 'time')} | <strong>End: </strong>{getPartDate(formatTimeToEST(classData.end), 'time')}</p>
                     <p>{classData.class_id}</p>
                     <button onClick={() => handleRemoveClass(classData.class_id, classData.student_id)}>Remove</button>
-                </li>
+                </div>
             )}
         </>
 

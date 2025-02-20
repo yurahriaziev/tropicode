@@ -590,6 +590,7 @@ def create_student():
 def student_dash():
     classes = []
     homeworks = []
+    upcoming_class = None
     try:
         data = request.json
         if not data['studentId']:
@@ -602,17 +603,21 @@ def student_dash():
             class_ref = db.collection('classes').document(id)
             class_data = class_ref.get().to_dict()
             class_data['status'] = get_class_status(class_data.get('start'), class_data.get('end'))
+            if class_data['status'] == 'UPCOMING' or class_data['status'] == 'LIVE':
+                upcoming_class = class_data
             classes.append(class_data)
 
         for id in stud_data.get('homework', []):
             homework_data = db.collection('homework').document(id).get().to_dict()
             # add how much time is left to complete or some form of reminder
             homeworks.append(homework_data)
+        
+        upcoming_homework = [item for item in homeworks if item['status'] == 'ASSIGNED']
 
     except Exception as e:
         return jsonify({'message':f'SERVER - Error occured when fetching student dashboard: {str(e)}'}), 403
     
-    return jsonify({"message": "Welcome to the student dashboard!", 'studentData':stud_data, 'classes':classes, 'homeworks':homeworks})
+    return jsonify({"message": "Welcome to the student dashboard!", 'studentData':stud_data, 'classes':classes, 'homeworks':homeworks, 'upcomingClass':upcoming_class, 'upcomingHomework':upcoming_homework})
 
 @app.route('/add-homework', methods=['POST'])
 @require_role('tutor')
@@ -715,7 +720,7 @@ def serve_static(filename):
 
 if __name__ == '__main__':
     try:
-        app.run(host='0.0.0.0', port=5000, debug=True)
-        # app.run(host='0.0.0.0', port=5001, debug=True) # for local
+        # app.run(host='0.0.0.0', port=5000, debug=True)
+        app.run(host='0.0.0.0', port=5001, debug=True) # for local
     finally:
         scheduler.shutdown()

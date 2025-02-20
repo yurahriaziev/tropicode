@@ -4,6 +4,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { API_BASE_URL } from "../config";
 import StudentClassList from "../components/StudentClassList";
 import StudentHomeworkList from "../components/StudentHomeworkList";
+import Header from "../components/Header";
+import Card from "../components/Card";
 // import "../css/StudentDash.css"
 
 function StudentDash() {
@@ -12,9 +14,11 @@ function StudentDash() {
     const { studentId } = useParams()
     const [error, setError] = useState('')
     const [upcomingClasses, setUpcomingClasses] = useState([])
-    const [currentTab, setCurrentTab] = useState('classes')
+    const [currentTab, setCurrentTab] = useState('home')
     const [assignedHomework, setAssignedHomework] = useState([])
     const [success, setSuccess] = useState('')
+    const [upcomingClass, setUpcomingClass] = useState({})
+    const [upcomingHomework, setUpcomingHomework] = useState([])
 
     const handleTabSwitch = (tab) => {
         setCurrentTab(tab)
@@ -66,6 +70,8 @@ function StudentDash() {
                     setStudentData(result.studentData)
                     setUpcomingClasses(result.classes)
                     setAssignedHomework(result.homeworks)
+                    setUpcomingHomework(result.upcomingHomework)
+                    setUpcomingClass(result.upcomingClass)
                 } else {
                     const result = await response.json()
                     setError(result.error || "Error fetching student dash")
@@ -87,48 +93,37 @@ function StudentDash() {
 
     return (
         <div className="student-cont">
+            <Header handleLogout={handleLogout} handleTabSwitch={handleTabSwitch} />
             {error && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}
 
             <div className="student-header">
                 <h1 className="student-title">Welcome {studentData.first}!</h1>
-                <button className="logout-button" onClick={handleLogout}>Logout</button>
-            </div>
-
-            <div className="student-tabs">
-                <button 
-                    className={`tab-button ${currentTab === 'homework' ? 'active' : ''}`} 
-                    onClick={() => handleTabSwitch('classes')}
-                >
-                    Classes
-                </button>
-                <button 
-                    className={`tab-button ${currentTab === 'classes' ? 'active' : ''}`} 
-                    onClick={() => handleTabSwitch('homework')}
-                >
-                    Homework
-                </button>
-                {/* <button 
-                    onClick={handleGameClick}
-                >
-                    Start Game
-                </button> */}
             </div>
 
             <div className="student-content">
-                {currentTab === 'classes' ? (
+                {currentTab === 'classes' && (
                     <>
                         <h2 className="section-title">Your Classes</h2>
                         <div className="student-class-list">
                             <StudentClassList upcomingClasses={upcomingClasses} />
                         </div>
                     </>
-                ) : (
+                )}
+
+                {currentTab === 'homework' && (
                     <>
                         <h2 className="section-title">Your Homework</h2>
                         <div className="student-homework-list">
                             <StudentHomeworkList homeworks={assignedHomework} setError={setError} setSuccess={setSuccess} />
                         </div>
+                    </>
+                )}
+
+                {currentTab === 'home' && (
+                    <>
+                        <Card card='upcoming-classes' upcomingClass={upcomingClass} />
+                        <Card card='homework' upcomingHomework={upcomingHomework}/>
                     </>
                 )}
             </div>
