@@ -110,7 +110,7 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
                             <p>Due: {formatTimeToEST(homeworkData.dueDate)} {homeworkData.dueDate.split('T')[0]}</p>
                             <p>Desc:</p>
                             <p>{homeworkData.desc}</p>
-                            <button onClick={() => handleScreenshotForm(true)}>Submit screenshot</button>
+                            {/* <button onClick={() => handleScreenshotForm(true)}>Submit screenshot</button> */}
                             {homeworkData.submission_url && <a href={homeworkData.submission_url}>Img link</a>}
                             {screenshotField && (
                                 <>
