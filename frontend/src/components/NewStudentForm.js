@@ -19,7 +19,6 @@ export default function NewStudentForm({ handleAddStudentClick, setError, setSuc
         }
         try {
             const token = localStorage.getItem("token")
-            console.log("Authorization Token:", token);
             const response = await fetch(`${API_BASE_URL}/create-student`, 
                 {
                     method: "POST",
