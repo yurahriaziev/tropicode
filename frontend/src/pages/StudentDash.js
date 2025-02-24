@@ -20,9 +20,9 @@ function StudentDash() {
     const [upcomingClass, setUpcomingClass] = useState({})
     const [upcomingHomework, setUpcomingHomework] = useState([])
 
-    const handleTabSwitch = (tab) => {
-        setCurrentTab(tab)
-    }
+    // const handleTabSwitch = (tab) => {
+    //     setCurrentTab(tab)
+    // }
 
     useEffect(() => {
         if (success) {
@@ -39,12 +39,12 @@ function StudentDash() {
         }
     }, [success, error])
 
-    const handleLogout = () => {
-        navigate('/')
-        localStorage.removeItem('token')
-        localStorage.removeItem('role')
-        localStorage.removeItem('token_expiry')
-    }
+    // const handleLogout = () => {
+    //     navigate('/')
+    //     localStorage.removeItem('token')
+    //     localStorage.removeItem('role')
+    //     localStorage.removeItem('token_expiry')
+    // }
 
     useEffect(() => {
         const fetchStudentDash = async() => {
@@ -93,7 +93,7 @@ function StudentDash() {
 
     return (
         <div className="student-cont">
-            <Header handleLogout={handleLogout} handleTabSwitch={handleTabSwitch} />
+            <Header setCurrentTab={setCurrentTab}/>
             {error && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}
 

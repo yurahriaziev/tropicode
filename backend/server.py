@@ -706,6 +706,27 @@ def get_code():
     except Exception as e:
         return jsonify({'error':f'SERVER - Error occured when fetching code: {str(e)}'}), 403
 
+@app.route('/fetch-homework', methods=['POST'])
+@require_role('student')
+def fetch_homework():
+    try:
+        data = request.json
+
+        if not data or 'id' not in data or not data['id']:
+            return jsonify({'error': 'Missing or invalid homework ID'}), 400
+        
+        homework_id = data.get('id')
+        
+        homework_doc = db.collection('homework').document(homework_id).get()
+        if not homework_doc.exists:
+            return jsonify({'error': 'Homework not found'}), 404
+
+        homework_data = homework_doc.to_dict()
+        return jsonify({'message': 'Fetched homework successfully', 'homework': homework_data})
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error':f'SERVER - Error occured when fetching homework: {str(e)}'}), 403
+
 @app.route("/server-test", methods=['POST', 'GET', 'OPTIONS'])
 def server_test():
     return jsonify({'message': 'Server OK'})
@@ -717,6 +738,7 @@ scheduler.start()
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     return send_from_directory('static', filename)
+
 
 if __name__ == '__main__':
     try:

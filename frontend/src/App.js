@@ -7,6 +7,7 @@ import TutorDash from './pages/TutorDash';
 import StudentDash from './pages/StudentDash';
 import GamePage from './pages/GamePage';
 import HomeworkPage from './pages/HomeworkPage';
+import StudentClassList from './components/StudentClassList';
 
 function App() {
   return (

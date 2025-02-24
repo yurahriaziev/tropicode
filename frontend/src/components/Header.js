@@ -1,7 +1,28 @@
 import React from "react";
 import '../css/Header.css'
+import { useLocation, useNavigate } from "react-router-dom";
 
-export default function Header({ handleLogout, handleTabSwitch }) {
+export default function Header({ setCurrentTab }) {
+    const navigate = useNavigate()
+    const location = useLocation()
+
+    const handleLogout = () => {
+        navigate('/')
+        localStorage.removeItem('token')
+        localStorage.removeItem('role')
+        localStorage.removeItem('token_expiry')
+    }
+
+    const handleTabSwitch = (tab) => {
+        if (location.pathname.includes('/student-dash')) {
+            setCurrentTab(tab)
+        } else {
+            const id = localStorage.getItem('userId')
+            console.log(id)
+            navigate(`/student-dash/${id}`)
+        }
+    }
+
     return (
         <header class="header">
             <div class="container">

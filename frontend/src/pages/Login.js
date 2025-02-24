@@ -47,6 +47,7 @@ export default function Login({ role }) {
                 localStorage.setItem("token", result.token)
                 const tokenExp = Date.now() + 60 * 60 * 1000
                 localStorage.setItem("token_expiry", tokenExp)
+                localStorage.setItem("userId", result.userId)
 
                 if (result.role === 'admin') {
                     navigate('/admin-dash')
