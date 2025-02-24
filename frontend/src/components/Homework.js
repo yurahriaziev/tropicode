@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import {API_BASE_URL} from "../config";
 import IDE from "./IDE";
 
-export default function Homework({ index, homeworkData, view, handleRemoveHomework, setError, setSuccess }) {
+export default function Homework({ homeworkData, view, handleRemoveHomework, setError, setSuccess }) {
     function formatTimeToEST(time) {
         time = time.split('T')[1]
         const utcTime = DateTime.fromISO(time, {zone: "utc"})
@@ -87,7 +87,7 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
     return (
         <>
             {view === 'tutor' ? (
-                <div key={index}>
+                <div>
                     <p>Title</p>
                     <h3>{homeworkData.title}</h3>
                     <p>Due: {formatTimeToEST(homeworkData.dueDate)} {homeworkData.dueDate.split('T')[0]}</p>
@@ -106,7 +106,7 @@ export default function Homework({ index, homeworkData, view, handleRemoveHomewo
                         <p>{homeworkStatus}</p>  {/* make animation for submission later */}
                     </div>
                     {homeworkOpen && (
-                        <div key={index}>
+                        <div>
                             <p>Due: {formatTimeToEST(homeworkData.dueDate)} {homeworkData.dueDate.split('T')[0]}</p>
                             <p>Desc:</p>
                             <p>{homeworkData.desc}</p>

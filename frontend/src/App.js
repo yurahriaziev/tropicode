@@ -6,6 +6,7 @@ import AdminDash from './pages/AdminDash';
 import TutorDash from './pages/TutorDash';
 import StudentDash from './pages/StudentDash';
 import GamePage from './pages/GamePage';
+import HomeworkPage from './pages/HomeworkPage';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path='/student-dash/:studentId' element={<StudentDash />} />
         <Route path='*' element={<PageNotFound />} />
         <Route path='/game' element={<GamePage />} />
+        <Route path='/homework/:id' element={<HomeworkPage />} />
       </Routes>
     </div>
   );

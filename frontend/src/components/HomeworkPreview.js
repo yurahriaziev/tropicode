@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function HomeworkPreview({ homework }) {
     function formatTimeToEST(time) {
@@ -9,9 +10,20 @@ export default function HomeworkPreview({ homework }) {
             return estTime.toFormat("hh:mma")
         }
 
+    const navigate = useNavigate()
+
+    const handleTitleClick = () => {
+        navigate(`/homework/${homework.id}`)
+    }
+
     return (
         <div className="preview-cont">
-            <h3>{homework.title}</h3>
+            <h3 onClick={handleTitleClick}
+                style={{cursor: 'pointer', textDecoration: 'none'}}
+                onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+                onMouseLeave={(e) => e.target.style.textDecoration = 'none'}>
+                    {homework.title}
+            </h3>
             <p>{formatTimeToEST(homework.dueDate)} {homework.dueDate.split('T')[0]}</p>
         </div>
     )

@@ -7,7 +7,7 @@ export default function StudentHomeworkList({ homeworks, setError, setSuccess })
             {homeworks.length > 0 ? (
                 <ul>
                     {homeworks.map((homeworkData, index) => (
-                        <Homework key={index} index={index} homeworkData={homeworkData} view='student' setError={setError} setSuccess={setSuccess} />
+                        <Homework key={index} homeworkData={homeworkData} view='student' setError={setError} setSuccess={setSuccess} />
                     ))}
                 </ul>
             ) : (
