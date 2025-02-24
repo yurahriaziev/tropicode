@@ -30,7 +30,7 @@ export default function Card({ card, upcomingClass, upcomingHomework }) {
             <div className='card-cont'>
                 <h2>
                     <span className="material-icons">school</span>
-                    <span>Upcoming Classes</span>
+                    <span>Upcoming Class</span>
                 </h2>
                 {loadingClass === null || loadingClass === true ? (
                     <h3>Loading...</h3>

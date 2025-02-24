@@ -5,6 +5,9 @@ export default function NewHomeworkForm({ handleAddHomeworkClick, handleAddHomew
     const [desc, setDesc] = useState('')
     const [dueDate, setDueDate] = useState('')
     const [endTime, setEndTime] = useState('')
+    const [isCoding, setIsCoding] = useState(false)
+    const [showTestCases, setShowTestCases] = useState(false)
+    const [testCases, setTestCases] = useState([])
 
     const endTimeOptions = []
     for (let hour = 17; hour <= 22; hour++) {
@@ -35,6 +38,28 @@ export default function NewHomeworkForm({ handleAddHomeworkClick, handleAddHomew
         return `${standardHours}:${minutss.toString().padStart(2, '0')}${suffix}`
     }
 
+    const handleCodingCheckbox = () => {
+        setIsCoding(!isCoding)
+        if (!isCoding) {
+            setShowTestCases(false)
+            setTestCases([])
+        }
+    }
+
+    const handleAddTestCases = () => {
+        setShowTestCases(true)
+    }
+
+    const handleTestCaseChange = (index, field, value) => {
+        const updatedTestCases = [...testCases]
+        updatedTestCases[index][field] = value
+        setTestCases(updatedTestCases)
+    }
+
+    const handleAddTestCase = () => {
+        setTestCases([...testCases, {input: '', expectedOutput: ''}])
+    }
+
     const handleSubmit = async(e) => {
         e.preventDefault()
         if (!title || !desc || !endTime) {
@@ -43,7 +68,13 @@ export default function NewHomeworkForm({ handleAddHomeworkClick, handleAddHomew
         }
         try {
             const formattedDueDateTime = formatTimeToISO(endTime)
-            const homework = {title, desc, studId, dueDate:formattedDueDateTime}
+            const homework = {
+                title, 
+                desc, 
+                studId, 
+                dueDate:formattedDueDateTime,
+                testCases: isCoding ? testCases : []
+            }
             console.log(homework)
             handleAddHomework(studId, homework)
             setSuccess('Homework assigned successfully')
@@ -97,6 +128,42 @@ export default function NewHomeworkForm({ handleAddHomeworkClick, handleAddHomew
                         ))}
                     </select>
                 </div>
+
+                <div>
+                    <label>Coding?</label>
+                    <input
+                        type="checkbox"
+                        checked={isCoding}
+                        onChange={handleCodingCheckbox}
+                    />
+                </div>
+                {isCoding && !showTestCases && (
+                    <button type="button" onClick={handleAddTestCases}>Add Test Cases</button>
+                )}
+
+                {showTestCases && (
+                    <div>
+                        <h4>Test Cases</h4>
+                        {testCases.map((testCase, index) => (
+                            <div key={index} style={{ marginBottom: "10px"}}>
+                                <input
+                                    type="text"
+                                    placeholder="Input"
+                                    value={testCase.input}
+                                    onChange={(e) => handleTestCaseChange(index, 'input', e.target.value)}
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Expected Output"
+                                    value={testCase.expectedOutput}
+                                    onChange={(e) => handleTestCaseChange(index, 'expectedOutput', e.target.value)}
+                                />
+                            </div>
+                        ))}
+                        <button type="button" onClick={handleAddTestCase}>+</button>
+                    </div>
+                )}
+
                 <button type="submit">Assign</button>
             </form>
         </>

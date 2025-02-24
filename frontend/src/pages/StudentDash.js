@@ -6,7 +6,6 @@ import StudentClassList from "../components/StudentClassList";
 import StudentHomeworkList from "../components/StudentHomeworkList";
 import Header from "../components/Header";
 import Card from "../components/Card";
-// import "../css/StudentDash.css"
 
 function StudentDash() {
     const navigate = useNavigate()
@@ -19,10 +18,6 @@ function StudentDash() {
     const [success, setSuccess] = useState('')
     const [upcomingClass, setUpcomingClass] = useState({})
     const [upcomingHomework, setUpcomingHomework] = useState([])
-
-    // const handleTabSwitch = (tab) => {
-    //     setCurrentTab(tab)
-    // }
 
     useEffect(() => {
         if (success) {
@@ -38,13 +33,6 @@ function StudentDash() {
             return () => clearTimeout(timer)
         }
     }, [success, error])
-
-    // const handleLogout = () => {
-    //     navigate('/')
-    //     localStorage.removeItem('token')
-    //     localStorage.removeItem('role')
-    //     localStorage.removeItem('token_expiry')
-    // }
 
     useEffect(() => {
         const fetchStudentDash = async() => {
