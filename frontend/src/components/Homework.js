@@ -87,7 +87,7 @@ export default function Homework({ homeworkData, view, handleRemoveHomework, set
     return (
         <>
             {view === 'tutor' ? (
-                <div>
+                <div style={{marginBottom: "2rem"}}>
                     <p>Title</p>
                     <h3>{homeworkData.title}</h3>
                     <p>Due: {formatTimeToEST(homeworkData.dueDate)} {homeworkData.dueDate.split('T')[0]}</p>

@@ -200,6 +200,9 @@ def add_code_submission(code, homework_id):
                 'code': code
             })
 
+        homework_ref = db.collection('homework').document(homework_id)
+        homework_ref.update({'status':'SUBMITTED'})
+
         return 'Code submitted successfully'
     except Exception as e:
         return f'Error submmiting code. {str(e)}'
