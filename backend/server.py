@@ -421,7 +421,7 @@ def tutor_dash():
     classes = []
     homeworks = []
     data = request.json
-    print(data)
+    # print(data)
     try:
         tutor_id = data.get('tutorId')
         if not tutor_id:
@@ -450,14 +450,26 @@ def tutor_dash():
             class_data = class_ref.get().to_dict()
             class_data['status'] = get_class_status(class_data.get('start'), class_data.get('end'))
             
-            print(class_data)
-
             classes.append(class_data)
 
         homework_ids= tutor_data.get('assigned_homework', [])
         for h_id in homework_ids:
             h_ref = db.collection('homework').document(h_id)
             h_data = h_ref.get().to_dict()
+
+            if 'studId' in h_data:
+                student_id = h_data.get('studId', '')
+                if not student_id:
+                    return jsonify({'error':'Missing student ID from one or more homeworks'}), 400
+                
+                student_doc = db.collection('students').document(student_id).get()
+                if not student_doc.exists:
+                    return jsonify({'error': f'Student with ID {student_id} not found'}), 404
+                
+                student = student_doc.to_dict()
+                student_name = student.get('first', 'FIRST') + ' ' + student.get('last', 'LAST')
+                h_data['studentName'] = student_name
+
             homeworks.append(h_data)
 
     except Exception as e:
@@ -480,7 +492,7 @@ def remove_class():
 def create_tutor():
     try:
         data = request.json
-        print(data)
+        # print(data)
         fields = ['first', 'last', 'email', 'age', 'teaches']
         for field in fields:
             if field not in data or not data[field]:
@@ -722,6 +734,21 @@ def fetch_homework():
             return jsonify({'error': 'Homework not found'}), 404
 
         homework_data = homework_doc.to_dict()
+
+        # if 'studId' in homework_data:
+        #     student_id = homework_data.get('studId', '')
+        #     if not student_id:
+        #         return jsonify({'error':'Missing student ID from one or more homeworks'}), 400
+            
+        #     student_doc = db.collection('students').document(student_id).get()
+        #     if not student_doc.exists:
+        #         return jsonify({'error': f'Student with ID {student_id} not found'}), 404
+            
+        #     student = student_doc.to_dict()
+        #     student_name = ' '.join(student.get('first' 'First'), student.get('last', 'Last'))
+        #     print('STUDENT NAME', student_name)
+        #     homework_data['studentName'] = student_name
+
         return jsonify({'message': 'Fetched homework successfully', 'homework': homework_data})
     except Exception as e:
         print(str(e))
@@ -742,7 +769,7 @@ def serve_static(filename):
 
 if __name__ == '__main__':
     try:
-        app.run(host='0.0.0.0', port=5000, debug=True)
-        # app.run(host='0.0.0.0', port=5001, debug=True) # for local
+        # app.run(host='0.0.0.0', port=5000, debug=True)
+        app.run(host='0.0.0.0', port=5001, debug=True) # for local
     finally:
         scheduler.shutdown()
