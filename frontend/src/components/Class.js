@@ -35,16 +35,22 @@ export default function Class({ index, classData, view, handleRemoveClass}) {
 
     function formatTimeToEST(utcTimeString) { 
         const utcDate = new Date(utcTimeString)
-        const utcToEstDate = utcDate.toLocaleString('en-US', {timeZone: 'America/New_York'})
-        return utcToEstDate
+        return new Intl.DateTimeFormat('en-US', {
+            timeZone: 'America/New_York',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        }).format(utcDate)
     }
 
-    function getPartDate(formatedESTDate, part) {
-        if (part === 'date') {
-            return formatedESTDate.split(',')[0]
-        } else if (part === 'time') {
-            return formatedESTDate.split(', ')[1]
-        }
+    function formatDateToEST(utcTimeString) {
+        const utcDate = new Date(utcTimeString)
+        return new Intl.DateTimeFormat('en-US', {
+            timeZone: 'America/New_York',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        }).format(utcDate)
     }
 
     return (
@@ -74,7 +80,8 @@ export default function Class({ index, classData, view, handleRemoveClass}) {
                         {status}
                     </p>
                     <p>{classData.studentName}</p>
-                    <p><strong>Start: </strong>{formatTimeToEST(classData.start)}<strong>End: </strong>{formatTimeToEST(classData.end)}</p>
+                    <p><strong>Date: </strong>{formatDateToEST(classData.start)}</p>
+                    <p><strong>Start: </strong>{formatTimeToEST(classData.start)}<strong> | End: </strong>{formatTimeToEST(classData.end)}</p>
                 </div>
 
             ) : (
@@ -87,9 +94,9 @@ export default function Class({ index, classData, view, handleRemoveClass}) {
                     </a>
                     <p>{classData.studentName}</p>
                     <p>
-                        <strong>Date: </strong>{getPartDate(formatTimeToEST(classData.start), 'date')}
+                        <strong>Date: </strong>{formatDateToEST(classData.start)}
                     </p>
-                    <p><strong>Start: </strong>{getPartDate(formatTimeToEST(classData.start), 'time')} | <strong>End: </strong>{getPartDate(formatTimeToEST(classData.end), 'time')}</p>
+                    <p><strong>Start: </strong>{formatTimeToEST(classData.start)} | <strong>End: </strong>{formatTimeToEST(classData.end)}</p>
                     <p>{classData.class_id}</p>
                     <button onClick={() => handleRemoveClass(classData.class_id, classData.student_id)}>Remove</button>
                 </div>

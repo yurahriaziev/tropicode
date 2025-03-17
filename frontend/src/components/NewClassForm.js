@@ -19,9 +19,13 @@ export default function NewClassForm({ handleNewClassClick, setError, createNewM
     }
 
     const formatToUTC = (date, time) => {
-        const estDate = new Date(`${date}T${time}:00-05:00`)
-        const utcDateString = estDate.toISOString()
-        return utcDateString
+        const localDate = new Date(`${date}T${time}:00`)
+    
+        const utcDate = new Date(
+            localDate.toLocaleString('en-US', { timeZone: 'America/New_York' })
+        )
+    
+        return utcDate.toISOString()
     }
 
     const handleSubmit = async(e) => {

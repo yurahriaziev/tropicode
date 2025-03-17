@@ -735,20 +735,6 @@ def fetch_homework():
 
         homework_data = homework_doc.to_dict()
 
-        # if 'studId' in homework_data:
-        #     student_id = homework_data.get('studId', '')
-        #     if not student_id:
-        #         return jsonify({'error':'Missing student ID from one or more homeworks'}), 400
-            
-        #     student_doc = db.collection('students').document(student_id).get()
-        #     if not student_doc.exists:
-        #         return jsonify({'error': f'Student with ID {student_id} not found'}), 404
-            
-        #     student = student_doc.to_dict()
-        #     student_name = ' '.join(student.get('first' 'First'), student.get('last', 'Last'))
-        #     print('STUDENT NAME', student_name)
-        #     homework_data['studentName'] = student_name
-
         return jsonify({'message': 'Fetched homework successfully', 'homework': homework_data})
     except Exception as e:
         print(str(e))
