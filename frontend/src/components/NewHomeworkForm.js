@@ -97,11 +97,13 @@ export default function NewHomeworkForm({ handleAddHomeworkClick, handleAddHomew
                     onChange={(e) => setTitle(e.target.value)}
                 />
                 <input
-                    type="text" 
+                    type="textarea" 
                     placeholder="Description" 
                     value={desc}
                     required={true}
                     onChange={(e) => setDesc(e.target.value)}
+                    rows={5}
+                    cols={50}
                 />
                 <div>
                     <label htmlFor="due-date-picker">Due Date:</label>
