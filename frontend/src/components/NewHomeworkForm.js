@@ -89,22 +89,26 @@ export default function NewHomeworkForm({ handleAddHomeworkClick, handleAddHomew
         <>
             <button onClick={() => handleAddHomeworkClick(false)}>Close</button>
             <form onSubmit={handleSubmit}>
-                <input
-                    type="text" 
-                    placeholder="Title" 
-                    value={title}
-                    required={true}
-                    onChange={(e) => setTitle(e.target.value)}
-                />
-                <input
-                    type="textarea" 
-                    placeholder="Description" 
-                    value={desc}
-                    required={true}
-                    onChange={(e) => setDesc(e.target.value)}
-                    rows={5}
-                    cols={50}
-                />
+                <div>
+                    <input
+                        type="text" 
+                        placeholder="Title" 
+                        value={title}
+                        required={true}
+                        onChange={(e) => setTitle(e.target.value)}
+                    />
+                </div>
+                <div>
+                    <textarea
+                        placeholder="Description"
+                        value={desc}
+                        required={true}
+                        onChange={(e) => setDesc(e.target.value)}
+                        rows={5}
+                        cols={50}
+                        style={{ width: "50%", padding: "8px", fontSize: "14px" }}
+                    />
+                </div>
                 <div>
                     <label htmlFor="due-date-picker">Due Date:</label>
                     <input
