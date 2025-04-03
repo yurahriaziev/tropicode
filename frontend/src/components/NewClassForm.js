@@ -59,7 +59,7 @@ export default function NewClassForm({ handleNewClassClick, setError, createNewM
         }
     }
     const endTimeOptions = []
-    for (let hour = 17; hour <= 19; hour++) {
+    for (let hour = 16; hour <= 19; hour++) {
         for (let min = 0; min < 60; min+=5) {
             if (hour === 19 && min > 0) break
             const formatedTime = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`
