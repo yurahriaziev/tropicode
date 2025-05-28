@@ -1,3 +1,5 @@
+# UPDATE: Tropicode V2 is in the making. Mid Summer 2025 is the set release date.
+
 # Tropicode
 
 **Overview**
