@@ -1,5 +1,5 @@
 # UPDATE: Tropicode V2 is OFFICIALLY out! New look, better tech stack and an overal improvement to the system.
-[(https://tropicode.tech)]
+https://tropicode.tech
 
 # Tropicode
 
