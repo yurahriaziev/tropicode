@@ -1,4 +1,5 @@
-# UPDATE: Tropicode V2 is in the making. Early access of Tropicode V2 will release early September 2025.
+# UPDATE: Tropicode V2 is OFFICIALLY out! New look, better tech stack and an overal improvement to the system.
+[(tropicode.tech)]
 
 # Tropicode
 
